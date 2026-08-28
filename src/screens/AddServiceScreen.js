@@ -3,6 +3,9 @@ import { View, Text, Pressable, TextInput, ScrollView, ActivityIndicator } from 
 import { X, Search, ChevronDown, ChevronUp } from "lucide-react-native";
 import { getBusinessServices } from "../services/api";
 
+import LoadingScreen from "../components/LoadingScreen";
+
+
 function formatPrice(price) {
   return `R$ ${Number(price).toFixed(2).replace(".", ",")}`;
 }
@@ -18,6 +21,8 @@ export default function AddServiceScreen({ navigation, route }) {
   useEffect(() => {
     loadServices();
   }, []);
+
+  
 
   async function loadServices() {
     try {
@@ -55,6 +60,10 @@ export default function AddServiceScreen({ navigation, route }) {
     onSelect(service);
     navigation.goBack();
   }
+
+  if (loading) {
+    return <LoadingScreen />;
+}
 
   return (
     <View className="flex-1 bg-white pt-14 px-5">

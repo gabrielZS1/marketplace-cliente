@@ -3,6 +3,8 @@ import { View, Text, Pressable, ScrollView, Image, ActivityIndicator } from "rea
 import { ArrowLeft, Check, ChevronRight, Star, Users } from "lucide-react-native";
 import { getBusinessEmployees, getAvailability } from "../services/api";
 
+import LoadingScreen from "../components/LoadingScreen";
+
 function formatDateParam(date) {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, "0");
@@ -20,6 +22,8 @@ export default function SelectEmployeeScreen({ navigation, route }) {
   useEffect(() => {
     loadData();
   }, []);
+
+  
 
   async function loadData() {
     try {
@@ -78,6 +82,10 @@ export default function SelectEmployeeScreen({ navigation, route }) {
     return <Text className="text-xs font-semibold text-neutral-400 mt-0.5">Sem disponibilidade nesta data</Text>;
   }
 
+  if (loading) {
+    return <LoadingScreen />;
+}
+
   return (
     <View className="flex-1 bg-white pt-14 px-5">
       <Pressable onPress={() => navigation.goBack()} className="mb-6">
@@ -90,7 +98,6 @@ export default function SelectEmployeeScreen({ navigation, route }) {
         <ActivityIndicator color="#9f7300" style={{ marginTop: 24 }} />
       ) : (
         <ScrollView showsVerticalScrollIndicator={false}>
-          {/* Sem preferência */}
           <Pressable
             onPress={() => handleSelect(null)}
             className="flex-row items-center py-4 border-b border-neutral-100"
@@ -107,7 +114,6 @@ export default function SelectEmployeeScreen({ navigation, route }) {
             {selectedEmployeeId == null && <Check color="#9f7300" size={20} />}
           </Pressable>
 
-          {/* Funcionários */}
           {employees.map((employee) => {
             const isSelected = selectedEmployeeId === employee.id;
             return (

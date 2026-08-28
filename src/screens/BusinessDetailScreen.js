@@ -1,10 +1,27 @@
 import { useEffect, useState } from "react";
-import { View, Text, Image, ScrollView, Pressable, TextInput, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  ScrollView,
+  Pressable,
+  TextInput,
+  ActivityIndicator,
+} from "react-native";
 import { ArrowLeft, Star, Search, Info } from "lucide-react-native";
 import { getBusinessById, getBusinessServices } from "../services/api";
 import { showAlert } from "../services/alert";
 
-const TABS = ["SERVIÇOS", "AVALIAÇÕES", "PORTFÓLIO", "CARTÃO DE PRESENTE", "PACOTES", "DETALHES"];
+import LoadingScreen from "../components/LoadingScreen";
+
+const TABS = [
+  "SERVIÇOS",
+  "AVALIAÇÕES",
+  "PORTFÓLIO",
+  "CARTÃO DE PRESENTE",
+  "PACOTES",
+  "DETALHES",
+];
 
 function formatPrice(price) {
   return `R$ ${Number(price).toFixed(2).replace(".", ",")}`;
@@ -14,15 +31,21 @@ function ServiceRow({ service, onBook }) {
   return (
     <View className="flex-row justify-between items-start py-3 border-b border-neutral-100">
       <View className="flex-1 pr-3">
-        <Text className="text-sm font-bold text-neutral-950">{service.name}</Text>
+        <Text className="text-sm font-bold text-neutral-950">
+          {service.name}
+        </Text>
         <Text className="text-xs text-neutral-500 mt-0.5">
           {service.description || "Serviços populares"}
         </Text>
       </View>
 
       <View className="items-end">
-        <Text className="text-sm font-bold text-neutral-950">{formatPrice(service.price)}</Text>
-        <Text className="text-xs text-neutral-500 mb-2">{service.durationMinutes}m</Text>
+        <Text className="text-sm font-bold text-neutral-950">
+          {formatPrice(service.price)}
+        </Text>
+        <Text className="text-xs text-neutral-500 mb-2">
+          {service.durationMinutes}m
+        </Text>
         <Pressable
           onPress={() => onBook(service)}
           className="bg-[#9f7300] rounded-lg px-4 py-2"
@@ -47,6 +70,8 @@ export default function BusinessDetailScreen({ navigation, route }) {
     loadData();
   }, [businessId]);
 
+  
+
   async function loadData() {
     try {
       const [businessData, servicesData] = await Promise.all([
@@ -65,14 +90,43 @@ export default function BusinessDetailScreen({ navigation, route }) {
   function handleTabPress(tab) {
     if (tab === "SERVIÇOS") {
       setActiveTab(tab);
+    } else if (tab === "AVALIAÇÕES") {
+      navigation.navigate("Reviews", {
+        businessId: business.id,
+        businessName: business.name,
+      });
+    } else if (tab === "PORTFÓLIO") {
+      navigation.navigate("Portfolio", {
+        businessName: business.name,
+        workspacePhotos: business.workspacePhotos ?? [],
+        portfolioPhotos: business.portfolioPhotos ?? [],
+      });
+    } else if (tab === "PACOTES") {
+      navigation.navigate("Packages", {
+        businessName: business.name,
+      });
+    } else if (tab === "CARTÃO DE PRESENTE") {
+      navigation.navigate("GiftCards", {
+        businessId: business.id,
+        businessName: business.name,
+      });
+    } else if (tab === "DETALHES") {
+      navigation.navigate("Details", {
+        businessId: business.id,
+        businessName: business.name,
+      });
     } else {
       showAlert("Em breve", "Essa seção ainda está em construção.");
     }
   }
 
   function handleBook(service) {
-    navigation.navigate("Booking", { businessId, service });
-  }
+  navigation.navigate("Booking", {
+    businessId,
+    business,
+    service,
+  });
+}
 
   if (loading || !business) {
     return (
@@ -88,16 +142,32 @@ export default function BusinessDetailScreen({ navigation, route }) {
 
   const filteredServices = services
     .filter((s) => (servicesFilter === "popular" ? s.popular : !s.popular))
-    .filter((s) => !search || s.name.toLowerCase().includes(search.toLowerCase()));
+    .filter(
+      (s) => !search || s.name.toLowerCase().includes(search.toLowerCase()),
+    );
+
+    if (loading) {
+    return <LoadingScreen />;
+}
 
   return (
-    <ScrollView className="flex-1 bg-white" showsVerticalScrollIndicator={false}>
-      {/* Foto principal */}
+    <ScrollView
+      className="flex-1 bg-white"
+      showsVerticalScrollIndicator={false}
+    >
       <View className="relative">
         {mainPhoto ? (
-          <Image source={{ uri: mainPhoto }} className="w-full" style={{ height: 260 }} resizeMode="cover" />
+          <Image
+            source={{ uri: mainPhoto }}
+            className="w-full"
+            style={{ height: 260 }}
+            resizeMode="cover"
+          />
         ) : (
-          <View className="w-full bg-neutral-200 items-center justify-center" style={{ height: 260 }} />
+          <View
+            className="w-full bg-neutral-200 items-center justify-center"
+            style={{ height: 260 }}
+          />
         )}
 
         <Pressable
@@ -108,17 +178,26 @@ export default function BusinessDetailScreen({ navigation, route }) {
         </Pressable>
       </View>
 
-      {/* Miniaturas */}
       {thumbnails.length > 0 && (
         <View className="flex-row px-5 mt-3 gap-2">
           {thumbnails.map((photo, index) => {
             const isLast = index === thumbnails.length - 1 && extraCount > 0;
             return (
-              <View key={photo} className="relative flex-1" style={{ height: 56 }}>
-                <Image source={{ uri: photo }} className="w-full h-full rounded-xl" resizeMode="cover" />
+              <View
+                key={photo}
+                className="relative flex-1"
+                style={{ height: 56 }}
+              >
+                <Image
+                  source={{ uri: photo }}
+                  className="w-full h-full rounded-xl"
+                  resizeMode="cover"
+                />
                 {isLast && (
                   <View className="absolute inset-0 bg-black/55 rounded-xl items-center justify-center">
-                    <Text className="text-white text-xs font-bold">+{extraCount}</Text>
+                    <Text className="text-white text-xs font-bold">
+                      +{extraCount}
+                    </Text>
                   </View>
                 )}
               </View>
@@ -131,11 +210,15 @@ export default function BusinessDetailScreen({ navigation, route }) {
         {business.featured && (
           <View className="flex-row items-center mb-2">
             <Star color="#9f7300" fill="#9f7300" size={12} />
-            <Text className="ml-1.5 text-xs font-semibold text-[#9f7300]">Recomendado pela Glowly</Text>
+            <Text className="ml-1.5 text-xs font-semibold text-[#9f7300]">
+              Recomendado pela Glowly
+            </Text>
           </View>
         )}
 
-        <Text className="text-2xl font-bold text-neutral-950">{business.name}</Text>
+        <Text className="text-2xl font-bold text-neutral-950">
+          {business.name}
+        </Text>
 
         {business.rating != null && (
           <View className="flex-row items-center mt-1.5">
@@ -164,19 +247,25 @@ export default function BusinessDetailScreen({ navigation, route }) {
           {business.address}, {business.city}-{business.state}
         </Text>
 
-        {/* Tags */}
         <View className="flex-row items-center mt-1.5">
           {business.featured && (
-            <View className="flex-row items-center mr-3">
+            <Pressable
+              onPress={() =>
+                navigation.navigate("Reviews", {
+                  businessId: business.id,
+                  businessName: business.name,
+                })
+              }
+              className="flex-row items-center mr-3"
+            >
               <Text className="text-xs text-neutral-400">Destaque</Text>
               <Info size={11} color="#a3a3a3" className="ml-1" />
-            </View>
+            </Pressable>
           )}
           <Text className="text-xs text-neutral-400">Empreendedor</Text>
         </View>
       </View>
 
-      {/* Abas */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -186,8 +275,14 @@ export default function BusinessDetailScreen({ navigation, route }) {
         {TABS.map((tab) => {
           const isActive = activeTab === tab;
           return (
-            <Pressable key={tab} onPress={() => handleTabPress(tab)} className="mr-6 pb-3">
-              <Text className={`text-[12px] ${isActive ? "font-extrabold text-neutral-950" : "font-semibold text-neutral-400"}`}>
+            <Pressable
+              key={tab}
+              onPress={() => handleTabPress(tab)}
+              className="mr-6 pb-3"
+            >
+              <Text
+                className={`text-[12px] ${isActive ? "font-extrabold text-neutral-950" : "font-semibold text-neutral-400"}`}
+              >
                 {tab}
               </Text>
               {isActive && <View className="mt-2 h-[2px] bg-neutral-950" />}
@@ -196,7 +291,6 @@ export default function BusinessDetailScreen({ navigation, route }) {
         })}
       </ScrollView>
 
-      {/* Conteúdo da aba Serviços */}
       {activeTab === "SERVIÇOS" && (
         <View className="px-5 mt-4 pb-8">
           <View className="flex-row items-center bg-[#f3f3f3] rounded-xl px-3 py-3 mb-4">
@@ -215,7 +309,9 @@ export default function BusinessDetailScreen({ navigation, route }) {
               onPress={() => setServicesFilter("popular")}
               className={`rounded-full px-4 py-2 border ${servicesFilter === "popular" ? "bg-[#9f7300] border-[#9f7300]" : "bg-white border-neutral-300"}`}
             >
-              <Text className={`text-xs font-bold ${servicesFilter === "popular" ? "text-white" : "text-neutral-700"}`}>
+              <Text
+                className={`text-xs font-bold ${servicesFilter === "popular" ? "text-white" : "text-neutral-700"}`}
+              >
                 Serviços populares
               </Text>
             </Pressable>
@@ -223,21 +319,31 @@ export default function BusinessDetailScreen({ navigation, route }) {
               onPress={() => setServicesFilter("other")}
               className={`rounded-full px-4 py-2 border ${servicesFilter === "other" ? "bg-[#9f7300] border-[#9f7300]" : "bg-white border-neutral-300"}`}
             >
-              <Text className={`text-xs font-bold ${servicesFilter === "other" ? "text-white" : "text-neutral-700"}`}>
+              <Text
+                className={`text-xs font-bold ${servicesFilter === "other" ? "text-white" : "text-neutral-700"}`}
+              >
                 Outros serviços
               </Text>
             </Pressable>
           </View>
 
           <Text className="text-lg font-bold text-neutral-950 mb-2">
-            {servicesFilter === "popular" ? "Serviços populares" : "Outros serviços"}
+            {servicesFilter === "popular"
+              ? "Serviços populares"
+              : "Outros serviços"}
           </Text>
 
           {filteredServices.length === 0 ? (
-            <Text className="text-sm text-neutral-400 mt-3">Nenhum serviço encontrado.</Text>
+            <Text className="text-sm text-neutral-400 mt-3">
+              Nenhum serviço encontrado.
+            </Text>
           ) : (
             filteredServices.map((service) => (
-              <ServiceRow key={service.id} service={service} onBook={handleBook} />
+              <ServiceRow
+                key={service.id}
+                service={service}
+                onBook={handleBook}
+              />
             ))
           )}
         </View>

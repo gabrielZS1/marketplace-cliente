@@ -5,6 +5,9 @@ import { Scissors } from "lucide-react-native";
 import { useAuth } from "../contexts/AuthContext";
 import { listMyAppointments } from "../services/api";
 
+import LoadingScreen from "../components/LoadingScreen";
+
+
 const STATUS_LABELS = {
   PENDING: "Pendente",
   CONFIRMED: "Confirmada",
@@ -14,7 +17,9 @@ const STATUS_LABELS = {
   NO_SHOW: "Não compareceu",
 };
 
-function AppointmentCard({ appointment, onBookAgain }) {
+
+
+function AppointmentCard({ appointment, onBookAgain, onReview }) {
   const date = new Date(appointment.startsAt);
   const month = date.toLocaleDateString("pt-BR", { month: "long" });
   const day = date.getDate();
@@ -32,19 +37,29 @@ function AppointmentCard({ appointment, onBookAgain }) {
 
           <Text className="text-base font-bold text-neutral-950">{appointment.serviceName}</Text>
           <Text className="text-xs text-neutral-500 mt-0.5">Com {appointment.employeeName}</Text>
+          
 
           <View className="flex-row items-center mt-2">
             <View className="w-2 h-2 rounded-full bg-neutral-950 mr-2" />
             <Text className="text-xs text-neutral-700">Na {appointment.businessName}</Text>
           </View>
 
-          {appointment.status === "COMPLETED" && (
-            <Pressable
-              onPress={() => onBookAgain(appointment)}
-              className="bg-[#9f7300] rounded-lg px-4 py-2.5 mt-3 self-start"
-            >
-              <Text className="text-white text-xs font-bold">Reservar novamente</Text>
-            </Pressable>
+          {true && (
+            <View className="flex-row mt-3" style={{ gap: 8 }}>
+              <Pressable
+                onPress={() => onBookAgain(appointment)}
+                className="bg-[#d8a420] rounded-lg px-4 py-2.5 self-start"
+              >
+                <Text className="text-white text-xs font-bold">Reservar novamente</Text>
+              </Pressable>
+
+              <Pressable
+                onPress={() => onReview(appointment)}
+                className="border border-[#d8a420] rounded-lg px-4 py-2.5 self-start"
+              >
+                <Text className="text-[#d8a420] text-xs font-bold">Avaliar</Text>
+              </Pressable>
+            </View>
           )}
         </View>
 
@@ -58,6 +73,8 @@ function AppointmentCard({ appointment, onBookAgain }) {
   );
 }
 
+
+
 export default function AppointmentsScreen({ navigation }) {
   const { token } = useAuth();
   const [appointments, setAppointments] = useState([]);
@@ -68,6 +85,17 @@ export default function AppointmentsScreen({ navigation }) {
       loadAppointments();
     }, [])
   );
+
+  function handleReview(appointment) {
+  navigation.navigate("CreateReview", {
+    appointmentId: appointment.id,
+    businessName: appointment.businessName,
+    serviceName: appointment.serviceName,
+    employeeName: appointment.employeeName,
+  });
+}
+
+  
 
   async function loadAppointments() {
     try {
@@ -88,12 +116,8 @@ export default function AppointmentsScreen({ navigation }) {
   const finished = appointments.filter((a) => ["COMPLETED", "CANCELLED", "NO_SHOW"].includes(a.status));
 
   if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator color="#9f7300" size="large" />
-      </View>
-    );
-  }
+    return <LoadingScreen />;
+}
 
   return (
     <FlatList
@@ -110,7 +134,7 @@ export default function AppointmentsScreen({ navigation }) {
             <View className="mb-6">
               <Text className="text-sm font-bold text-neutral-500 mb-3">Próximos</Text>
               {upcoming.map((appointment) => (
-                <AppointmentCard key={appointment.id} appointment={appointment} onBookAgain={handleBookAgain} />
+                <AppointmentCard key={appointment.id} appointment={appointment} onBookAgain={handleBookAgain} onReview={handleReview} />
               ))}
             </View>
           )}
@@ -119,7 +143,7 @@ export default function AppointmentsScreen({ navigation }) {
         </View>
       }
       renderItem={({ item }) => (
-        <AppointmentCard appointment={item} onBookAgain={handleBookAgain} />
+        <AppointmentCard appointment={item} onBookAgain={handleBookAgain} onReview={handleReview} />
       )}
       ListEmptyComponent={
         <View className="items-center mt-6">

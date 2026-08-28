@@ -5,6 +5,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 import { AuthProvider, useAuth } from './src/contexts/AuthContext';
+import { AlertProvider } from "./src/contexts/AlertProvider";
 
 import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
@@ -17,13 +18,24 @@ import AppointmentsScreen from './src/screens/AppointmentsScreen';
 import BookingScreen from './src/screens/BookingScreen';
 import SelectEmployeeScreen from './src/screens/SelectEmployeeScreen';
 import AddServiceScreen from './src/screens/AddServiceScreen';
-
+import BookingConfirmationScreen from './src/screens/BookingConfirmationScreen'
+import FiltersScreen from './src/screens/FiltersScreen';
+import ReviewsScreen from './src/screens/ReviewsScreen';
+import PortfolioScreen from './src/screens/PortfolioScreen';
+import PackagesScreen from './src/screens/PackagesScreen';
+import GiftCardsScreen from './src/screens/GiftCardsScreen';
+import DetailsScreen from './src/screens/DetailsScreen';
+import GiftCardDetailsScreen from "./src/screens/GiftCardDetailsScreen";
+import LoadingScreen from "./src/components/LoadingScreen";
+import BookingPendingScreen from './src/screens/BookingPendingScreen';
 import BottomTabBar from './src/components/BottomTabBar';
+import CreateReviewScreen from './src/screens/CreateReviewScreen';
 
 import { View, Text, ActivityIndicator } from 'react-native';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
+const ExploreStack = createNativeStackNavigator()
 
 function PlaceholderScreen({ label }) {
   return (
@@ -33,11 +45,45 @@ function PlaceholderScreen({ label }) {
   );
 }
 
+function ExploreNavigator() {
+  return (
+    <ExploreStack.Navigator screenOptions={{ headerShown: false }}>
+      <ExploreStack.Screen name="SearchServices"      component={SearchServices} />
+      <ExploreStack.Screen name="SearchInput"         component={SearchInputScreen} />
+      <ExploreStack.Screen name="BusinessDetail"      component={BusinessDetailScreen} />
+      <ExploreStack.Screen name="Booking"             component={BookingScreen} />
+      <ExploreStack.Screen name="SelectEmployee"      component={SelectEmployeeScreen} />
+      <ExploreStack.Screen name="AddService"          component={AddServiceScreen} />
+      <ExploreStack.Screen name="BookingConfirmation" component={BookingConfirmationScreen} />
+      <ExploreStack.Screen name="Filters"             component={FiltersScreen} />
+      <ExploreStack.Screen name="Reviews" component={ReviewsScreen} />
+      <ExploreStack.Screen name="Portfolio" component={PortfolioScreen} />
+      <ExploreStack.Screen name="Packages" component={PackagesScreen} />
+      <ExploreStack.Screen name="GiftCards" component={GiftCardsScreen} />
+      <ExploreStack.Screen name="Details" component={DetailsScreen} />
+      <ExploreStack.Screen name="GiftCardsDetail" component={GiftCardDetailsScreen} />
+      <ExploreStack.Screen name="Loading" component={LoadingScreen} />
+      <ExploreStack.Screen name="BookingPending" component={BookingPendingScreen} />
+
+    </ExploreStack.Navigator>
+  );
+}
 function MainTabs() {
   return (
-    <Tab.Navigator screenOptions={{ headerShown: false }} tabBar={(props) => <BottomTabBar {...props} />}>
+    <Tab.Navigator
+      screenOptions={{
+        headerShown: false,
+        tabBarStyle: {
+          position: "absolute",
+          backgroundColor: "transparent",
+          borderTopWidth: 0,
+          elevation: 0,
+        },
+      }}
+      tabBar={(props) => <BottomTabBar {...props} />}
+    >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Explorar">{() => <PlaceholderScreen label="Explorar" />}</Tab.Screen>
+      <Tab.Screen name="Explorar" component={ExploreNavigator} />
       <Tab.Screen name="Agendamentos" component={AppointmentsScreen} />
       <Tab.Screen name="Perfil" component={ProfileScreen} />
     </Tab.Navigator>
@@ -46,7 +92,6 @@ function MainTabs() {
 
 function Routes() {
   const { token, loading } = useAuth();
-
   if (loading) {
     return (
       <View className="flex-1 items-center justify-center bg-white">
@@ -54,7 +99,6 @@ function Routes() {
       </View>
     );
   }
-
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {token ? (
@@ -66,6 +110,16 @@ function Routes() {
           <Stack.Screen name="Booking" component={BookingScreen} />
           <Stack.Screen name="SelectEmployee" component={SelectEmployeeScreen} />
           <Stack.Screen name="AddService" component={AddServiceScreen} />
+          <Stack.Screen name="BookingConfirmation" component={BookingConfirmationScreen} />
+          <Stack.Screen name="Reviews" component={ReviewsScreen} />
+          <Stack.Screen name="Portfolio" component={PortfolioScreen} />
+          <Stack.Screen name="Packages" component={PackagesScreen} />
+          <Stack.Screen name="GiftCards" component={GiftCardsScreen} />
+          <Stack.Screen name="Details" component={DetailsScreen} />
+          <Stack.Screen name="GiftCardsDetail" component={GiftCardDetailsScreen} />
+          <Stack.Screen name="Loading" component={LoadingScreen}/>
+          <Stack.Screen name="BookingPending" component={BookingPendingScreen} />
+          <Stack.Screen name="CreateReview" component={CreateReviewScreen} />
         </>
       ) : (
         <>
@@ -85,13 +139,15 @@ export default function App() {
     Poppins_700Bold,
   });
 
-  if (!fontsLoaded) return null;
+  if (!fontsLoaded) return <LoadingScreen />;
 
   return (
-    <AuthProvider>
-      <NavigationContainer>
-        <Routes />
-      </NavigationContainer>
-    </AuthProvider>
+    <AlertProvider>
+      <AuthProvider>
+        <NavigationContainer>
+          <Routes />
+        </NavigationContainer>
+      </AuthProvider>
+    </AlertProvider>
   );
 }

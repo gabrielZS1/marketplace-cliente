@@ -1,22 +1,28 @@
-import { Alert, Platform } from "react-native";
+import { getAlertHandler } from "../contexts/alertStore";
 
 export function showAlert(title, message, onPress) {
-  if (Platform.OS === "web") {
-    window.alert(`${title}${message ? `\n\n${message}` : ""}`);
-    if (onPress) onPress();
-  } else {
-    Alert.alert(title, message, onPress ? [{ text: "OK", onPress }] : undefined);
+  const show = getAlertHandler();
+  if (show) {
+    show({
+      type: "error",
+      title,
+      message,
+      buttons: [{ text: "OK", onPress, style: "primary" }],
+    });
   }
 }
 
 export function showConfirm(title, message, onConfirm) {
-  if (Platform.OS === "web") {
-    const confirmed = window.confirm(`${title}\n\n${message}`);
-    if (confirmed) onConfirm();
-  } else {
-    Alert.alert(title, message, [
-      { text: "Cancelar", style: "cancel" },
-      { text: "Sair", style: "destructive", onPress: onConfirm },
-    ]);
+  const show = getAlertHandler();
+  if (show) {
+    show({
+      type: "warning",
+      title,
+      message,
+      buttons: [
+        { text: "Cancelar", style: "cancel" },
+        { text: "Sair", style: "destructive", onPress: onConfirm },
+      ],
+    });
   }
 }

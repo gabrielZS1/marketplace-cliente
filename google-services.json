@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "900868626974",
+    "project_id": "glowly-b64a9",
+    "storage_bucket": "glowly-b64a9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:900868626974:android:5e49883d6814e3007a6c0f",
+        "android_client_info": {
+          "package_name": "com.gabrielzs1.admin"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAFlLnKEjdx-SArxC-UqG5_YQnnyKD4uP8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:900868626974:android:ee2da6131f4780db7a6c0f",
+        "android_client_info": {
+          "package_name": "com.gabrielzs1.client"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAFlLnKEjdx-SArxC-UqG5_YQnnyKD4uP8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

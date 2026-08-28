@@ -6,14 +6,18 @@ import {
   RefreshControl,
   ScrollView,
   Text,
-  TextInput,
   View,
 } from "react-native";
 import * as Location from "expo-location";
 import { LinearGradient } from "expo-linear-gradient";
-import { ArrowRight, Search } from "lucide-react-native";
+import {
+  ArrowRight,
+  Search,
+  ChevronRight,
+  Calendar,
+} from "lucide-react-native";
 import { FlatList } from "react-native";
-import { useRef } from "react";
+import LoadingScreen from "../components/LoadingScreen";
 
 import { getAllBusinesses, getNearbyBusinesses } from "../services/api";
 
@@ -29,61 +33,70 @@ const CATEGORIES = [
   { key: "OTHER", label: "Outros" },
 ];
 
-const ITEM_WIDTH = 85; // 73 (largura do item) + 12 (margem direita)
-const REPEAT_COUNT = 40; // quantas vezes repetimos a lista
+const CATEGORY_IMAGES = {
+  BARBERSHOP: require("../assets/categories/barbershop.jpg"),
+  HAIRDRESSER: require("../assets/categories/hairdresser.jpg"),
+  WELLNESS: require("../assets/categories/wellness.jpg"),
+  SPA: require("../assets/categories/spa.jpg"),
+  SKINCARE: require("../assets/categories/skincare.jpg"),
+  MANICURE: require("../assets/categories/manicure.jpg"),
+  EYEBROWS_LASHES: require("../assets/categories/eyebrows_lashes.jpg"),
+  MAKEUP: require("../assets/categories/makeup.jpg"),
+  OTHER: require("../assets/categories/other.jpg"),
+};
 
-const repeatedCategories = Array.from({ length: REPEAT_COUNT }).flatMap((_, i) =>
-  CATEGORIES.map((c) => ({ ...c, uid: `${c.key}-${i}` }))
+const ITEM_WIDTH = 85;
+const REPEAT_COUNT = 40;
+
+const repeatedCategories = Array.from({ length: REPEAT_COUNT }).flatMap(
+  (_, i) => CATEGORIES.map((c) => ({ ...c, uid: `${c.key}-${i}` })),
 );
 
 const initialCategoryIndex = Math.floor(REPEAT_COUNT / 2) * CATEGORIES.length;
 
 function RecentCard({ business, onPress }) {
-
   const imageUri = business.logoUrl;
 
   return (
-    <Pressable onPress={onPress} className="w-48 mr-4 overflow-hidden rounded-2xl bg-stone-800">
+    <View className="w-80 mr-4 ml-1 mb-2 overflow-hidden rounded-2xl bg-stone-800">
       {imageUri ? (
-        <Image source={{ uri: imageUri }} className="h-28 w-full" resizeMode="cover" />
+        <Image
+          source={{ uri: imageUri }}
+          className="h-40 w-full"
+          resizeMode="cover"
+        />
       ) : (
-        <View className="h-28 w-full items-center justify-center bg-stone-600">
-          <Text className="text-xs text-white/70">Sem imagem</Text>
+        <View className="h-40 w-full items-center justify-center bg-stone-300">
+          <Text className="text-xs text-white/50">Sem imagem</Text>
         </View>
       )}
 
-      {(business.rating != null || business.reviewCount != null) && (
-        <View className="absolute right-2 top-2 rounded-lg bg-black/45 px-2 py-1">
-          {business.rating != null && (
-            <Text className="text-[10px] font-bold text-white">
-              {Number(business.rating).toFixed(1).replace(".", ",")}
-            </Text>
-          )}
-          {business.reviewCount != null && (
-            <Text className="text-[7px] text-white">{business.reviewCount} avaliações</Text>
-          )}
-        </View>
-      )}
-
-      <View className="px-3 py-2">
-        <Text numberOfLines={1} className="text-xs font-bold text-white">
+      <Pressable
+        onPress={onPress}
+        className="flex-row items-center justify-between px-3 py-3"
+      >
+        <Text numberOfLines={1} className="text-sm font-bold text-white">
           {business.name}
         </Text>
-        {!!business.description && (
-          <Text numberOfLines={1} className="mt-0.5 text-[8px] text-white/75">
-            {business.description}
-          </Text>
-        )}
-      </View>
-    </Pressable>
+        <ChevronRight size={18} color="white" />
+      </Pressable>
+    </View>
   );
 }
 
 function BusinessImage({ business, className }) {
-  const imageUri = business.imageUrl || business.coverImage || business.photoUrl;
+  const imageUri =
+    business.logoUrl ||
+    business.imageUrl ||
+    business.coverImage ||
+    business.photoUrl;
 
   return imageUri ? (
-    <Image source={{ uri: imageUri }} className={className} resizeMode="cover" />
+    <Image
+      source={{ uri: imageUri }}
+      className={className}
+      resizeMode="cover"
+    />
   ) : (
     <View className={`${className} items-center justify-center bg-stone-300`}>
       <Text className="text-[10px] text-stone-500">Sem imagem</Text>
@@ -102,7 +115,9 @@ function RatingBadge({ business }) {
         </Text>
       )}
       {business.reviewCount != null && (
-        <Text className="text-[7px] text-white">{business.reviewCount} avaliações</Text>
+        <Text className="text-[7px] text-white">
+          {business.reviewCount} avaliações
+        </Text>
       )}
     </View>
   );
@@ -110,19 +125,34 @@ function RatingBadge({ business }) {
 
 function OfferCard({ business, onPress }) {
   return (
-    <Pressable onPress={onPress} className="mr-4 w-48 overflow-hidden rounded-2xl bg-[#e7e7e7]">
+    <Pressable
+      onPress={onPress}
+      className="mr-4 w-[268px] overflow-hidden rounded-2xl bg-[#e7e7e7]"
+    >
       <View>
         <BusinessImage business={business} className="h-24 w-full" />
         <RatingBadge business={business} />
       </View>
       <View className="px-2 pb-2 pt-1.5">
-        <Text numberOfLines={1} className="text-[10px] font-bold text-neutral-950">{business.name}</Text>
+        <Text
+          numberOfLines={1}
+          className="text-[10px] font-bold text-neutral-950"
+        >
+          {business.name}
+        </Text>
         {!!business.description && (
-          <Text numberOfLines={2} className="mt-0.5 text-[7px] leading-2 text-neutral-500">{business.description}</Text>
+          <Text
+            numberOfLines={2}
+            className="mt-0.5 text-[7px] leading-2 text-neutral-500"
+          >
+            {business.description}
+          </Text>
         )}
         {!!business.promotionText && (
           <View className="mt-1.5 self-start rounded-full bg-[#dfbd53] px-2 py-1">
-            <Text className="text-[7px] font-bold text-[#755400]">{business.promotionText}</Text>
+            <Text className="text-[7px] font-bold text-[#755400]">
+              {business.promotionText}
+            </Text>
           </View>
         )}
       </View>
@@ -132,18 +162,33 @@ function OfferCard({ business, onPress }) {
 
 function RecommendedCard({ business, onPress }) {
   return (
-    <Pressable onPress={onPress} className="mb-4 w-[48%] overflow-hidden rounded-2xl bg-[#e7e7e7]">
+    <Pressable
+      onPress={onPress}
+      className="mb-4 w-[268px] overflow-hidden rounded-2xl bg-[#e7e7e7]"
+    >
       <View>
-        <BusinessImage business={business} className="h-24 w-full" />
+        <BusinessImage business={business} className="h-40 w-full" />
         <RatingBadge business={business} />
       </View>
       <View className="px-2 pb-2 pt-1.5">
-        <Text numberOfLines={1} className="text-[10px] font-bold text-neutral-950">{business.name}</Text>
+        <Text
+          numberOfLines={1}
+          className="text-[14px] font-bold text-neutral-950"
+        >
+          {business.name}
+        </Text>
         {!!business.description && (
-          <Text numberOfLines={2} className="mt-0.5 text-[7px] leading-2 text-neutral-500">{business.description}</Text>
+          <Text
+            numberOfLines={2}
+            className="mt-0.5 text-[10px] leading-2 text-neutral-500"
+          >
+            {business.description}
+          </Text>
         )}
         {!!business.highlightText && (
-          <Text className="mt-1 text-[7px] font-bold text-neutral-900">{business.highlightText}</Text>
+          <Text className="mt-1 text-[7px] font-bold text-neutral-900">
+            {business.highlightText}
+          </Text>
         )}
       </View>
     </Pressable>
@@ -164,11 +209,12 @@ export default function HomeScreen({ navigation }) {
   async function loadBusinesses() {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
-      const data = status === "granted"
-        ? await Location.getCurrentPositionAsync({}).then(({ coords }) =>
-          getNearbyBusinesses(coords.latitude, coords.longitude)
-        )
-        : await getAllBusinesses();
+      const data =
+        status === "granted"
+          ? await Location.getCurrentPositionAsync({}).then(({ coords }) =>
+              getNearbyBusinesses(coords.latitude, coords.longitude),
+            )
+          : await getAllBusinesses();
       setBusinesses(data);
     } catch {
       setBusinesses(await getAllBusinesses());
@@ -179,46 +225,95 @@ export default function HomeScreen({ navigation }) {
   }
 
   const filteredBusinesses = useMemo(
-    () => businesses.filter((business) => {
-      const matchesCategory = !activeCategory || business.category === activeCategory;
-      const matchesSearch = business.name.toLowerCase().includes(search.toLowerCase());
-      return matchesCategory && matchesSearch;
-    }),
-    [activeCategory, businesses, search]
+    () =>
+      businesses.filter((business) => {
+        const matchesCategory =
+          !activeCategory || business.category === activeCategory;
+        const matchesSearch = business.name
+          .toLowerCase()
+          .includes(search.toLowerCase());
+        return matchesCategory && matchesSearch;
+      }),
+    [activeCategory, businesses, search],
   );
 
-  // Quando houver histórico real, substitua este array pelos últimos estabelecimentos visitados.
+  if (loading) {
+    return <LoadingScreen />;
+  }
+
   const recentBusinesses = filteredBusinesses.slice(0, 8);
   const nearbyBusinesses = [...filteredBusinesses]
-    .sort((a, b) => (a.distanceKm ?? Number.MAX_SAFE_INTEGER) - (b.distanceKm ?? Number.MAX_SAFE_INTEGER))
+    .sort(
+      (a, b) =>
+        (a.distanceKm ?? Number.MAX_SAFE_INTEGER) -
+        (b.distanceKm ?? Number.MAX_SAFE_INTEGER),
+    )
     .slice(0, 6);
   const availableTodayBusinesses = filteredBusinesses
     .filter((business) => business.availableToday === true)
     .slice(0, 6);
 
-  if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-[#3a3535]">
-        <ActivityIndicator color="#a47300" size="large" />
-      </View>
-    );
+  // ─── Helpers de navegação ────────────────────────────────────────────────────
+
+  // Navega para o detalhe de um estabelecimento dentro do ExploreNavigator
+  function goToBusinessDetail(businessId) {
+    navigation.navigate("Explorar", {
+      screen: "BusinessDetail",
+      params: { businessId },
+    });
   }
+
+  // Navega para a tela de busca com uma categoria pré-selecionada
+  function goToSearchWithCategory(categoryKey) {
+    navigation.navigate("Explorar", {
+      screen: "SearchServices",
+      params: { category: categoryKey },
+    });
+  }
+
+  // Navega para a busca sem filtro
+  function goToSearch() {
+    navigation.navigate("Explorar", {
+      screen: "SearchInput",
+    });
+  }
+
+  // ────────────────────────────────────────────────────────────────────────────
 
   return (
     <ScrollView
       className="flex-1 bg-[#3a3535]"
       showsVerticalScrollIndicator={false}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadBusinesses(); }} tintColor="#a47300" />}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={() => {
+            setRefreshing(true);
+            loadBusinesses();
+          }}
+          tintColor="#a47300"
+        />
+      }
     >
-      <LinearGradient colors={["#a77905", "#8b6302", "#5b4101"]} className="overflow-hidden pt-8">
-        <Text className="mb-4 text-center text-[38px] font-bold text-white">Glowly</Text>
+      <LinearGradient
+        colors={["#a77905", "#8b6302", "#5b4101"]}
+        className="overflow-hidden pt-12"
+      >
+        <Text
+          className="mb-4 text-center text-[36px] text-white"
+          style={{ fontFamily: "Poppins_700Bold" }}
+        >
+          Glowly
+        </Text>
 
         <Pressable
-          onPress={() => navigation.navigate("SearchInput")}
-          className="mx-12 flex-row items-center rounded-xl bg-[#e9e9e9] px-3 py-2.5"
+          onPress={goToSearch}
+          className="mx-4 flex-row items-center rounded-full bg-[#e9e9e9] px-4 py-3"
         >
           <Search size={27} color="#666" strokeWidth={3} />
-          <Text className="ml-2 flex-1 text-sm text-neutral-500">Pesquise serviços ou empresas</Text>
+          <Text className="ml-2 flex-1 text-sm text-neutral-500">
+            Pesquise serviços ou empresas
+          </Text>
         </Pressable>
 
         <FlatList
@@ -227,15 +322,37 @@ export default function HomeScreen({ navigation }) {
           horizontal
           showsHorizontalScrollIndicator={false}
           initialScrollIndex={initialCategoryIndex}
-          getItemLayout={(_, index) => ({ length: ITEM_WIDTH, offset: ITEM_WIDTH * index, index })}
+          getItemLayout={(_, index) => ({
+            length: ITEM_WIDTH,
+            offset: ITEM_WIDTH * index,
+            index,
+          })}
           className="mt-6"
           contentContainerStyle={{ paddingRight: 12 }}
           renderItem={({ item }) => (
             <Pressable
-              onPress={() => navigation.navigate("Search", { category: item.key })}
+              onPress={() => goToSearchWithCategory(item.key)}
               className="mr-3 w-[73px] items-center"
             >
-              <View className="h-16 w-16 rounded-full bg-[#eeeeee]" />
+              <View
+                className="h-20 w-20 rounded-full items-center justify-center bg-[#eeeeee]"
+                style={{
+                  borderWidth: 1,
+                  borderColor: "#F6C344",
+                  padding: 2,
+                }}
+              >
+                <View className="h-full w-full rounded-full overflow-hidden items-center justify-center bg-white">
+                  <Image
+                    source={CATEGORY_IMAGES[item.key]}
+                    style={{
+                      width: 80,
+                      height: 110,
+                    }}
+                    resizeMode="contain"
+                  />
+                </View>
+              </View>
               <Text className="mt-1 text-center text-[11px] font-bold leading-3 text-white">
                 {item.label}
               </Text>
@@ -243,93 +360,141 @@ export default function HomeScreen({ navigation }) {
           )}
         />
 
-        <Text className="mb-2 mt-4 px-5 text-[11px] font-bold text-white">Seus Recentes</Text>
+        <View className="mt-5 border-t border-[#F6C344]/40 px-5 pt-4"></View>
+
+        <View className="flex-row items-center justify-between px-5 pb-3">
+          <Text className="text-[11px] font-bold text-white">
+            Seus Recentes
+          </Text>
+          <Pressable
+            onPress={() => navigation.navigate("Agendamentos")}
+            className="flex-row items-center"
+          >
+            <Text className="text-[10px] font-bold text-white/80 mr-1">
+              Ver todos
+            </Text>
+            <ArrowRight
+              size={12}
+              color="rgba(255,255,255,0.8)"
+              strokeWidth={3}
+            />
+          </Pressable>
+        </View>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 22, paddingRight: 8 }}
+          contentContainerStyle={{ paddingHorizontal: 14, paddingRight: 4 }}
         >
-          {recentBusinesses.length ? recentBusinesses.map((business) => (
-            <RecentCard
-              key={business.id}
-              business={business}
-              onPress={() => navigation.navigate("BusinessDetail", { businessId: business.id })}
-            />
-          )) : (
-            <Text className="pb-3 text-xs text-white/80">Você ainda não possui recentes.</Text>
+          {recentBusinesses.length ? (
+            recentBusinesses.map((business) => (
+              <RecentCard
+                key={business.id}
+                business={business}
+                onPress={() => goToBusinessDetail(business.id)}
+              />
+            ))
+          ) : (
+            <Text className="pb-3 text-xs text-white/80">
+              Você ainda não possui recentes.
+            </Text>
           )}
         </ScrollView>
-        <View className="mt-5 border-t border-white/80 px-5 pb-5 pt-4">
-          <Text className="text-[11px] font-bold text-white">Ainda não há agendamentos</Text>
+
+        <View className="mx-5 mt-5 mb-5 flex-row items-center justify-between rounded-2xl bg-black/20 px-4 py-4">
+          <View className="flex-row items-center flex-1">
+            <Calendar size={20} color="white" />
+            <Text className="ml-3 text-[13px] font-bold text-white flex-1">
+              Ver seus agendamentos
+            </Text>
+          </View>
+
           <Pressable
             onPress={() => navigation.navigate("Agendamentos")}
-            className="mx-6 mt-3 flex-row items-center justify-center rounded-xl border border-white py-3"
+            className="h-9 w-9 rounded-full bg-white items-center justify-center"
           >
-            <Text className="text-[14px] font-bold text-white">Ir para meus agendamentos</Text>
-            <ArrowRight className="ml-3" size={27} color="white" strokeWidth={3} />
+            <ArrowRight size={18} color="#5b4101" strokeWidth={3} />
           </Pressable>
         </View>
       </LinearGradient>
 
-      {/* Seções abaixo do degradê */}
       <View className="bg-[#dcdcdc] pb-6 pt-5">
-        <Text className="mb-3 px-5 text-xl font-bold text-neutral-950">Ofertas especiais</Text>
+        <Text className="mb-3 px-5 text-xl font-bold text-neutral-950">
+          Ofertas especiais
+        </Text>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: 20, paddingRight: 4 }}
         >
-          {filteredBusinesses.filter((business) => business.promotionText).map((business) => (
-            <OfferCard
-              key={business.id}
-              business={business}
-              onPress={() => navigation.navigate("BusinessDetail", { businessId: business.id })}
-            />
-          ))}
+          {filteredBusinesses
+            .filter((business) => business.promotionText)
+            .map((business) => (
+              <OfferCard
+                key={business.id}
+                business={business}
+                onPress={() => goToBusinessDetail(business.id)}
+              />
+            ))}
           {!filteredBusinesses.some((business) => business.promotionText) && (
-            <Text className="text-sm text-neutral-500">Não há ofertas disponíveis.</Text>
+            <Text className="text-sm text-neutral-500">
+              Não há ofertas disponíveis.
+            </Text>
           )}
         </ScrollView>
       </View>
 
-      <View className="border-t border-neutral-500 bg-[#dcdcdc] px-3 pt-3">
-        <Text className="mb-3 px-2 text-xl font-bold text-neutral-950">Recomendado</Text>
+      <View
+        className=" bg-[#dcdcdc] px-3 pt-3"
+        style={{ borderTopWidth: 0.5, borderTopColor: "#737373" }}
+      >
+        <Text className="mb-3 px-2 text-xl font-bold text-neutral-950">
+          Recomendado
+        </Text>
         <View className="flex-row flex-wrap justify-between">
           {filteredBusinesses.map((business) => (
             <RecommendedCard
               key={business.id}
               business={business}
-              onPress={() => navigation.navigate("BusinessDetail", { businessId: business.id })}
+              onPress={() => goToBusinessDetail(business.id)}
             />
           ))}
         </View>
       </View>
 
-      <View className="border-t border-neutral-500 bg-[#dcdcdc] px-3 pt-3">
-        <Text className="mb-3 px-2 text-xl font-bold text-neutral-950">Perto de você</Text>
+      <View
+        className="border-t border-neutral-400 bg-[#dcdcdc] px-3 pt-3"
+        style={{ borderTopWidth: 0.5, borderTopColor: "#737373" }}
+      >
+        <Text className="mb-3 px-2 text-xl font-bold text-neutral-950">
+          Perto de você
+        </Text>
         <View className="flex-row flex-wrap justify-between">
           {nearbyBusinesses.map((business) => (
             <RecommendedCard
               key={business.id}
               business={business}
-              onPress={() => navigation.navigate("BusinessDetail", { businessId: business.id })}
+              onPress={() => goToBusinessDetail(business.id)}
             />
           ))}
         </View>
       </View>
 
-      <View className="border-t border-neutral-500 bg-[#dcdcdc] px-3 pb-6 pt-3">
-        <Text className="mb-3 px-2 text-xl font-bold text-neutral-950">Disponíveis hoje</Text>
+      <View className="bg-[#dcdcdc] px-3 pb-6 pt-3">
+        <Text className="mb-3 px-2 text-xl font-bold text-neutral-950">
+          Disponíveis hoje
+        </Text>
         <View className="flex-row flex-wrap justify-between">
           {availableTodayBusinesses.map((business) => (
             <RecommendedCard
               key={business.id}
               business={business}
-              onPress={() => navigation.navigate("BusinessDetail", { businessId: business.id })}
+              onPress={() => goToBusinessDetail(business.id)}
             />
           ))}
           {!availableTodayBusinesses.length && (
-            <Text className="px-2 text-sm text-neutral-500">Nenhuma empresa disponível hoje.</Text>
+            <Text className="px-2 text-sm text-neutral-500">
+              Nenhuma empresa disponível hoje.
+            </Text>
           )}
         </View>
       </View>

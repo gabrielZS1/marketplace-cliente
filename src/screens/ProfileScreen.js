@@ -15,6 +15,9 @@ import {
 import { useAuth } from "../contexts/AuthContext";
 import { updateUserAddress } from "../services/api";
 
+
+
+
 const MENU_ITEMS = [
   { icon: Calendar, label: "Meus agendamentos", route: "Agendamentos" },
   { icon: Heart, label: "Favoritos", route: "Favorites" },
@@ -27,6 +30,8 @@ export default function ProfileScreen({ navigation }) {
   const [address, setAddress] = useState(user?.address ?? "");
   const [editingAddress, setEditingAddress] = useState(false);
   const [savingAddress, setSavingAddress] = useState(false);
+
+
 
   async function saveAddress() {
     setSavingAddress(true);
@@ -47,7 +52,6 @@ export default function ProfileScreen({ navigation }) {
 
   return (
     <View className="flex-1 bg-white pt-14 px-6">
-      {/* Header do perfil */}
       <View className="items-center mb-8">
         <View className="w-20 h-20 rounded-full bg-[#f3e6c8] items-center justify-center mb-3">
           <UserIcon color="#9f7300" size={32} />
@@ -56,7 +60,6 @@ export default function ProfileScreen({ navigation }) {
         <Text className="text-sm text-neutral-500 mt-0.5">{user?.role === "CLIENT" ? "Cliente" : user?.role}</Text>
       </View>
 
-      {/* Endereço */}
       <View className="bg-[#f7f7f7] rounded-2xl px-4 py-4 mb-6">
         <View className="flex-row items-center mb-2">
           <MapPin color="#9f7300" size={16} />
@@ -90,7 +93,6 @@ export default function ProfileScreen({ navigation }) {
         )}
       </View>
 
-      {/* Menu de opções */}
       <View className="mb-6">
         {MENU_ITEMS.map((item, index) => (
           <Pressable
@@ -105,7 +107,6 @@ export default function ProfileScreen({ navigation }) {
         ))}
       </View>
 
-      {/* Sair */}
       <Pressable onPress={handleLogout} className="flex-row items-center py-4">
         <LogOut color="#dc2626" size={20} />
         <Text className="ml-3 text-sm font-semibold text-red-600">Sair da conta</Text>
