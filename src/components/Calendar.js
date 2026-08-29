@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { View, Text, Pressable } from "react-native";
 import { ChevronLeft, ChevronRight } from "lucide-react-native";
+import { colors } from "../theme";
 
 const WEEKDAY_LABELS = ["Dom.", "Seg.", "Ter.", "Qua.", "Qui.", "Sex.", "Sáb."];
 const MONTH_LABELS = [
@@ -82,15 +83,15 @@ export default function Calendar({ availableDaysOfWeek, selectedDate, onSelectDa
                 onPress={() => isBookable && onSelectDate(date)}
                 disabled={!isBookable}
                 className={`w-9 h-9 rounded-full items-center justify-center ${
-                  isSelected ? "bg-white border-2 border-[#9f7300]" : "bg-neutral-200"
+                  isSelected ? "bg-brand border-2 border-brand-dark" : "bg-neutral-100"
                 }`}
               >
-                <Text className={`text-sm ${isSelected ? "font-bold text-[#9f7300]" : "text-neutral-500"}`}>
+                <Text className={`text-sm ${isSelected ? "font-bold text-on-brand" : "text-neutral-500"}`}>
                   {date.getDate()}
                 </Text>
               </Pressable>
               {isBookable && !isSelected && (
-                <View className="w-4 h-[2px] bg-[#d4af37] rounded-full mt-1" />
+                <View className="w-4 h-[2px] rounded-full mt-1" style={{ backgroundColor: colors.brand }} />
               )}
             </View>
           );

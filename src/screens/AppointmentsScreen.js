@@ -4,8 +4,10 @@ import { useFocusEffect } from "@react-navigation/native";
 import { Scissors } from "lucide-react-native";
 import { useAuth } from "../contexts/AuthContext";
 import { listMyAppointments } from "../services/api";
+import { colors } from "../theme";
 
 import LoadingScreen from "../components/LoadingScreen";
+import logger from "../services/logger";
 
 
 const STATUS_LABELS = {
@@ -29,8 +31,8 @@ function AppointmentCard({ appointment, onBookAgain, onReview }) {
     <View className="bg-[#f3f3f3] rounded-2xl p-4 mb-4">
       <View className="flex-row justify-between items-start">
         <View className="flex-1 pr-3">
-          <View className="self-start bg-[#e0e0e0] rounded-full px-2.5 py-1 mb-2">
-            <Text className="text-[10px] font-bold text-neutral-700">
+          <View className="self-start bg-surface-alt rounded-full px-2.5 py-1 mb-2">
+            <Text className="text-[10px] font-bold text-ink-soft">
               {STATUS_LABELS[appointment.status] ?? appointment.status}
             </Text>
           </View>
@@ -48,16 +50,16 @@ function AppointmentCard({ appointment, onBookAgain, onReview }) {
             <View className="flex-row mt-3" style={{ gap: 8 }}>
               <Pressable
                 onPress={() => onBookAgain(appointment)}
-                className="bg-[#d8a420] rounded-lg px-4 py-2.5 self-start"
+                className="bg-brand rounded-lg px-4 py-2.5 self-start"
               >
-                <Text className="text-white text-xs font-bold">Reservar novamente</Text>
+                <Text className="text-on-brand text-xs font-bold">Reservar novamente</Text>
               </Pressable>
 
               <Pressable
                 onPress={() => onReview(appointment)}
-                className="border border-[#d8a420] rounded-lg px-4 py-2.5 self-start"
+                className="border border-brand-dark rounded-lg px-4 py-2.5 self-start"
               >
-                <Text className="text-[#d8a420] text-xs font-bold">Avaliar</Text>
+                <Text className="text-brand-dark text-xs font-bold">Avaliar</Text>
               </Pressable>
             </View>
           )}
@@ -102,7 +104,7 @@ export default function AppointmentsScreen({ navigation }) {
       const data = await listMyAppointments(token);
       setAppointments(data);
     } catch (error) {
-      console.log(error.message);
+      logger.error("Erro ao carregar agendamentos:", error?.message);
     } finally {
       setLoading(false);
     }
@@ -124,7 +126,7 @@ export default function AppointmentsScreen({ navigation }) {
       data={finished}
       keyExtractor={(item) => item.id}
       className="flex-1 bg-white"
-      contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 24 }}
+      contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 140 }}
       showsVerticalScrollIndicator={false}
       ListHeaderComponent={
         <View>
@@ -147,7 +149,7 @@ export default function AppointmentsScreen({ navigation }) {
       )}
       ListEmptyComponent={
         <View className="items-center mt-6">
-          <Scissors color="#d4d4d4" size={40} />
+          <Scissors color={colors.inkFaint} size={40} />
           <Text className="text-neutral-400 text-sm mt-3">Nenhum agendamento finalizado ainda.</Text>
         </View>
       }

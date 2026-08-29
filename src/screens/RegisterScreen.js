@@ -10,6 +10,7 @@ import {
   Image,
   SafeAreaView,
   TouchableOpacity,
+  Linking,
 } from "react-native";
 import {
   ArrowLeft,
@@ -19,9 +20,11 @@ import {
   Phone,
   Eye,
   EyeOff,
+  Check,
 } from "lucide-react-native";
 
 import { showAlert } from "../services/alert";
+import { API_BASE_URL } from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
 import LoadingScreen from "../components/LoadingScreen";
 
@@ -32,6 +35,13 @@ export default function RegisterScreen({ navigation }) {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+
+  function openLegal(path) {
+    Linking.openURL(`${API_BASE_URL}${path}`).catch(() =>
+      showAlert("Erro", "Não foi possível abrir o documento."),
+    );
+  }
 
   const { signUp } = useAuth();
 
@@ -83,12 +93,12 @@ export default function RegisterScreen({ navigation }) {
     }
 
     if (password.length < 8) {
-      showAlert("Erro", "A senha deve possuir 8 caracteres.");
+      showAlert("Erro", "A senha deve ter pelo menos 8 caracteres.");
       return;
     }
 
-    if (password.length > 8) {
-      showAlert("Erro", "A senha deve possuir no máximo 8 caracteres.");
+    if (password.length > 64) {
+      showAlert("Erro", "A senha pode ter no máximo 64 caracteres.");
       return;
     }
 
@@ -97,10 +107,18 @@ export default function RegisterScreen({ navigation }) {
       return;
     }
 
+    if (!acceptedTerms) {
+      showAlert(
+        "Atenção",
+        "É preciso aceitar os Termos de Uso e a Política de Privacidade para continuar.",
+      );
+      return;
+    }
+
     setLoading(true);
 
     try {
-      await signUp(cleanName, cleanEmail, cleanPhone, password);
+      await signUp(cleanName, cleanEmail, cleanPhone, password, acceptedTerms);
       setName("");
       setEmail("");
       setPhone("");
@@ -221,7 +239,7 @@ export default function RegisterScreen({ navigation }) {
                 secureTextEntry={!showPassword}
                 editable={!loading}
                 autoComplete="new-password"
-                maxLength={8}
+                maxLength={64}
                 onChangeText={(text) =>
                   setPassword(text.replace(/[^a-zA-Z0-9!@#$%^&*()_\-+=]/g, ""))
                 }
@@ -236,29 +254,55 @@ export default function RegisterScreen({ navigation }) {
               </TouchableOpacity>
             </View>
 
-            <Text className="text-neutral-500 text-xs leading-5 mt-8 text-center">
-              Ao se inscrever, você concorda com nossos{" "}
-              <Text className="text-[#F6C344] font-semibold">
-                Termos e Condições
-              </Text>{" "}
-              e nossas{" "}
-              <Text className="text-[#F6C344] font-semibold">
-                Política de Privacidade
+            <Pressable
+              onPress={() => setAcceptedTerms((v) => !v)}
+              disabled={loading}
+              className="flex-row items-start mt-8"
+            >
+              <View
+                className={`w-5 h-5 rounded-md border items-center justify-center mt-0.5 ${
+                  acceptedTerms
+                    ? "bg-brand border-brand"
+                    : "bg-white border-neutral-400"
+                }`}
+              >
+                {acceptedTerms && <Check size={14} color="#171717" />}
+              </View>
+
+              <Text className="flex-1 ml-3 text-neutral-500 text-xs leading-5">
+                Li e concordo com os{" "}
+                <Text
+                  className="text-brand-dark font-semibold"
+                  onPress={() => openLegal("/legal/termos")}
+                >
+                  Termos de Uso
+                </Text>{" "}
+                e a{" "}
+                <Text
+                  className="text-brand-dark font-semibold"
+                  onPress={() => openLegal("/legal/privacidade")}
+                >
+                  Política de Privacidade
+                </Text>
+                .
               </Text>
-              .
-            </Text>
+            </Pressable>
 
             <Pressable
               onPress={handleRegister}
-              disabled={loading}
+              disabled={loading || !acceptedTerms}
               style={({ pressed }) => ({
                 opacity: pressed ? 0.85 : 1,
               })}
               className={`h-14 rounded-2xl justify-center items-center mt-10 ${
-                loading ? "bg-neutral-300" : "bg-[#F6C344]"
+                loading || !acceptedTerms ? "bg-neutral-300" : "bg-brand"
               }`}
             >
-              <Text className="text-black text-lg font-bold">
+              <Text
+                className={`text-lg font-bold ${
+                  loading || !acceptedTerms ? "text-neutral-500" : "text-black"
+                }`}
+              >
                 {loading ? "Criando conta..." : "Continuar"}
               </Text>
             </Pressable>
@@ -270,7 +314,7 @@ export default function RegisterScreen({ navigation }) {
             >
               <Text className="text-neutral-500 text-base">
                 Já possui uma conta?
-                <Text className="text-[#F6C344] font-bold"> Login</Text>
+                <Text className="text-brand-dark font-bold"> Login</Text>
               </Text>
             </Pressable>
           </View>

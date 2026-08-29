@@ -1,19 +1,23 @@
 import "./global.css";
 import { useFonts, Poppins_400Regular, Poppins_500Medium, Poppins_600SemiBold, Poppins_700Bold } from '@expo-google-fonts/poppins';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, getFocusedRouteNameFromRoute } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 import { AuthProvider, useAuth } from './src/contexts/AuthContext';
 import { AlertProvider } from "./src/contexts/AlertProvider";
+import { colors } from "./src/theme";
 
 import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
+import ForgotPasswordScreen from './src/screens/ForgotPasswordScreen';
+import ResetPasswordScreen from './src/screens/ResetPasswordScreen';
 import HomeScreen from './src/screens/HomeScreen';
 import SearchServices from './src/screens/SearchServices';
 import SearchInputScreen from './src/screens/SearchInputScreen';
 import BusinessDetailScreen from './src/screens/BusinessDetailScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import SettingsScreen from './src/screens/SettingsScreen';
 import AppointmentsScreen from './src/screens/AppointmentsScreen';
 import BookingScreen from './src/screens/BookingScreen';
 import SelectEmployeeScreen from './src/screens/SelectEmployeeScreen';
@@ -31,19 +35,17 @@ import BookingPendingScreen from './src/screens/BookingPendingScreen';
 import BottomTabBar from './src/components/BottomTabBar';
 import CreateReviewScreen from './src/screens/CreateReviewScreen';
 
-import { View, Text, ActivityIndicator } from 'react-native';
+import { View } from 'react-native';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 const ExploreStack = createNativeStackNavigator()
 
-function PlaceholderScreen({ label }) {
-  return (
-    <View className="flex-1 items-center justify-center bg-neutral-900">
-      <Text className="text-white">{label} — em construção</Text>
-    </View>
-  );
-}
+// Rotas do ExploreNavigator em que a barra inferior deve continuar aparecendo.
+// Qualquer outra rota (fluxos internos como detalhe do negócio, agendamento,
+// avaliações...) esconde a barra — assim os botões de rodapé dessas telas não
+// ficam mais cobertos.
+const TAB_BAR_VISIBLE_ROUTES = ["SearchServices", "SearchInput"];
 
 function ExploreNavigator() {
   return (
@@ -80,7 +82,18 @@ function MainTabs() {
           elevation: 0,
         },
       }}
-      tabBar={(props) => <BottomTabBar {...props} />}
+      tabBar={(props) => {
+        const route = props.state.routes[props.state.index];
+        const focused =
+          getFocusedRouteNameFromRoute(route) ??
+          (route.name === "Explorar" ? "SearchServices" : route.name);
+
+        if (route.name === "Explorar" && !TAB_BAR_VISIBLE_ROUTES.includes(focused)) {
+          return null;
+        }
+
+        return <BottomTabBar {...props} />;
+      }}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Explorar" component={ExploreNavigator} />
@@ -93,11 +106,7 @@ function MainTabs() {
 function Routes() {
   const { token, loading } = useAuth();
   if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator color="#9f7300" size="large" />
-      </View>
-    );
+    return <LoadingScreen />;
   }
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -120,11 +129,14 @@ function Routes() {
           <Stack.Screen name="Loading" component={LoadingScreen}/>
           <Stack.Screen name="BookingPending" component={BookingPendingScreen} />
           <Stack.Screen name="CreateReview" component={CreateReviewScreen} />
+          <Stack.Screen name="Settings" component={SettingsScreen} />
         </>
       ) : (
         <>
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Register" component={RegisterScreen} />
+          <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+          <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
         </>
       )}
     </Stack.Navigator>

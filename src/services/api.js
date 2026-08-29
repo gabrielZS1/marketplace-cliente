@@ -1,4 +1,27 @@
-const API_URL = "http://192.168.15.27:8082";
+import logger from "./logger";
+
+// URL base da API.
+//   - Local:  defina EXPO_PUBLIC_API_URL no arquivo .env (veja .env.example).
+//   - Builds: o valor vem do "env" de cada profile no eas.json.
+// Os paths deste serviço já incluem o prefixo /api (ex.: "/api/auth/login"),
+// então a base é normalizada para a origem — aceita "https://host" ou
+// "https://host/api" na variável de ambiente.
+const RAW_API_URL =
+  process.env.EXPO_PUBLIC_API_URL || "https://glowly-backend-fkqe.onrender.com";
+
+const API_URL = RAW_API_URL.replace(/\/+$/, "").replace(/\/api$/, "");
+
+// Origem da API sem o prefixo /api — para links de páginas servidas fora da API
+// REST (ex.: /legal/termos, /legal/privacidade).
+export const API_BASE_URL = API_URL;
+
+if (!__DEV__ && !API_URL.startsWith("https://")) {
+  logger.error(
+    "AVISO DE SEGURANÇA: a API não está usando HTTPS em produção — os dados do cliente trafegam sem criptografia.",
+  );
+}
+
+const REQUEST_TIMEOUT_MS = 15000;
 
 // preenchido pelo AuthContext, para permitir renovar o token
 // e persistir o resultado sem criar dependência circular de import
@@ -30,10 +53,24 @@ async function request(path, options = {}, token = null, isRetry = false) {
     ...(options.headers || {}),
   };
 
-  const response = await fetch(`${API_URL}${path}`, {
-    ...options,
-    headers,
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+  let response;
+  try {
+    response = await fetch(`${API_URL}${path}`, {
+      ...options,
+      headers,
+      signal: controller.signal,
+    });
+  } catch (err) {
+    if (err.name === "AbortError") {
+      throw new Error("A conexão demorou demais. Tente novamente.");
+    }
+    throw new Error("Não foi possível conectar. Verifique sua internet.");
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   if (response.status === 401 && !isRetry && token) {
     const refreshToken = await authHandlers.getRefreshToken();
@@ -117,6 +154,10 @@ export function getBusinessById(businessId, token = null) {
   return request(`/api/businesses/${businessId}`, {}, token);
 }
 
+export function getMe(token) {
+  return request("/api/auth/me", {}, token);
+}
+
 export function login(email, password) {
   return request("/api/auth/login", {
     method: "POST",
@@ -127,7 +168,7 @@ export function login(email, password) {
   });
 }
 
-export function register(name, email, phone, password) {
+export function register(name, email, phone, password, acceptedTerms) {
   return request("/api/auth/register", {
     method: "POST",
     body: JSON.stringify({
@@ -135,7 +176,24 @@ export function register(name, email, phone, password) {
       email,
       phone,
       password,
+      acceptedTerms,
     }),
+  });
+}
+
+// Envia o código de redefinição de senha por e-mail. Resposta é sempre 204,
+// exista a conta ou não (o backend não revela quem tem cadastro).
+export function forgotPassword(email) {
+  return request("/api/auth/forgot-password", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}
+
+export function resetPassword(email, code, newPassword) {
+  return request("/api/auth/reset-password", {
+    method: "POST",
+    body: JSON.stringify({ email, code, newPassword }),
   });
 }
 

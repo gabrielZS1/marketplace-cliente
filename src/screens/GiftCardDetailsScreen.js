@@ -141,9 +141,9 @@ export default function GiftCardDetailsScreen({ navigation, route }) {
         <View className="px-5 mt-6">
           <Pressable
             onPress={() => setShowSummary(true)}
-            className="h-14 bg-[#9f7300] rounded-2xl items-center justify-center"
+            className="h-14 bg-brand rounded-2xl items-center justify-center"
           >
-            <Text className="font-bold text-white text-base">Continuar</Text>
+            <Text className="font-bold text-on-brand text-base">Continuar</Text>
           </Pressable>
         </View>
       </ScrollView>
@@ -282,9 +282,9 @@ function SummaryModal({ visible, onClose, image, card, businessName, onConcluir 
             </View>
             <Pressable
               onPress={onConcluir}
-              className="bg-[#9f7300] h-14 rounded-2xl items-center justify-center"
+              className="bg-brand h-14 rounded-2xl items-center justify-center"
             >
-              <Text className="font-bold text-white text-base">Concluir pedido</Text>
+              <Text className="font-bold text-on-brand text-base">Concluir pedido</Text>
             </Pressable>
           </View>
         </Animated.View>

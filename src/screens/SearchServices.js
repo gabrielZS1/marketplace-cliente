@@ -7,6 +7,8 @@ import { FlatList } from "react-native";
 
 import ResultCard from "../components/ResultCard";
 import LoadingScreen from "../components/LoadingScreen";
+import { colors } from "../theme";
+import logger from "../services/logger";
 
 const CATEGORIES = [
     { key: "BARBERSHOP", label: "Barbeiros" },
@@ -46,14 +48,6 @@ const SORT_OPTIONS = [
     { key: "rating",      label: "Avaliações (melhores classificações primeiro)" },
 ];
 
-const CATEGORY_ITEM_WIDTH = 110;
-const CATEGORY_REPEAT_COUNT = 40;
-
-const repeatedCategories = Array.from({ length: CATEGORY_REPEAT_COUNT }).flatMap((_, i) =>
-    CATEGORIES.map((c) => ({ ...c, uid: `${c.key}-${i}` }))
-);
-
-const initialCategoryScrollIndex = Math.floor(CATEGORY_REPEAT_COUNT / 2) * CATEGORIES.length;
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 
@@ -97,7 +91,7 @@ export default function SearchService({ navigation, route }) {
                 : data;
             setResults(filtered);
         } catch (error) {
-            console.log(error.message);
+            logger.error("Erro ao carregar resultados:", error?.message);
         } finally {
             setLoading(false);
         }
@@ -125,65 +119,59 @@ export default function SearchService({ navigation, route }) {
                 keyExtractor={(item) => String(item.id)}
                 showsVerticalScrollIndicator={false}
                 className="flex-1 bg-[#dcdcdc]"
-                contentContainerStyle={{ paddingBottom: 90 }}
+                contentContainerStyle={{ paddingBottom: 140 }}
                 ListHeaderComponent={
                     <View>
-                        <View className="bg-[#9f7300] pb-2 pt-11">
+                        <View className="bg-brand-dark pb-4 pt-16">
                             <Pressable
                                 onPress={() => navigation.navigate("SearchInput")}
-                                className="mx-6 flex-row items-center rounded-lg bg-[#d9d9d9] px-3 py-2"
+                                className="mx-6 flex-row items-center rounded-xl bg-white px-4 py-3.5"
                             >
-                                <Search size={22} color="#656565" strokeWidth={3} />
-                                <Text className="ml-2 flex-1 text-[11px] text-[#555]">
+                                <Search size={20} color="#656565" strokeWidth={2.5} />
+                                <Text className="ml-2 flex-1 text-sm text-neutral-500">
                                     {search || "Pesquise serviços ou empresas"}
                                 </Text>
                             </Pressable>
 
-                            <View className="mx-7 mt-2 flex-row gap-2">
+                            <View className="mx-6 mt-3 flex-row gap-2">
                                 <Pressable
                                     onPress={() => navigation.navigate("LocationSearch", { onSelect: setAddress })}
-                                    className="h-8 flex-1 flex-row items-center rounded-lg bg-[#d9d9d9] px-2"
+                                    className="h-10 flex-1 flex-row items-center rounded-xl bg-white/15 px-3"
                                 >
-                                    <MapPin size={13} color="#656565" strokeWidth={3} />
-                                    <Text numberOfLines={1} className="ml-1 text-[8px] text-[#555]">
+                                    <MapPin size={15} color="#ffffff" strokeWidth={2.5} />
+                                    <Text numberOfLines={1} className="ml-1.5 text-xs text-white">
                                         {address || "Rua João Mendes Mesquita"}
                                     </Text>
                                 </Pressable>
 
                                 <Pressable
                                     onPress={() => navigation.navigate("DatePicker", { onSelect: setDate })}
-                                    className="h-8 flex-1 flex-row items-center rounded-lg bg-[#d9d9d9] px-2"
+                                    className="h-10 flex-1 flex-row items-center rounded-xl bg-white/15 px-3"
                                 >
-                                    <CalendarDays size={13} color="#656565" strokeWidth={3} />
-                                    <Text numberOfLines={1} className="ml-1 text-[8px] text-[#555]">
+                                    <CalendarDays size={15} color="#ffffff" strokeWidth={2.5} />
+                                    <Text numberOfLines={1} className="ml-1.5 text-xs text-white">
                                         {date || "Quando?"}
                                     </Text>
                                 </Pressable>
                             </View>
 
                             <FlatList
-                                data={repeatedCategories}
-                                keyExtractor={(item) => item.uid}
+                                data={CATEGORIES}
+                                keyExtractor={(item) => item.key}
                                 horizontal
                                 showsHorizontalScrollIndicator={false}
-                                initialScrollIndex={initialCategoryScrollIndex}
-                                getItemLayout={(_, index) => ({
-                                    length: CATEGORY_ITEM_WIDTH,
-                                    offset: CATEGORY_ITEM_WIDTH * index,
-                                    index,
-                                })}
-                                className="mt-4"
-                                contentContainerStyle={{ paddingHorizontal: 6 }}
+                                className="mt-5"
+                                contentContainerStyle={{ paddingHorizontal: 20 }}
                                 renderItem={({ item }) => {
                                     const isActive = activeCategory === item.key;
                                     return (
                                         <Pressable
                                             onPress={() => setActiveCategory(item.key)}
-                                            className="mr-6 items-center justify-start"
-                                            style={{ width: CATEGORY_ITEM_WIDTH - 24, height: 34 }}
+                                            className="mr-6 items-center justify-center"
+                                            style={{ minHeight: 44 }}
                                         >
                                             <Text
-                                                className={`text-[11px] text-center ${
+                                                className={`text-[13px] text-center ${
                                                     isActive
                                                         ? "text-white font-extrabold"
                                                         : "text-white/75 font-bold"
@@ -192,7 +180,7 @@ export default function SearchService({ navigation, route }) {
                                                 {item.label}
                                             </Text>
                                             {isActive && (
-                                                <View className="absolute bottom-0 h-[2px] w-8 rounded-full bg-white" />
+                                                <View className="absolute -bottom-1 h-[2px] w-8 rounded-full bg-white" />
                                             )}
                                         </Pressable>
                                     );
@@ -200,8 +188,8 @@ export default function SearchService({ navigation, route }) {
                             />
                         </View>
 
-                        <View className="px-6 pt-5">
-                            <Text className="text-base font-bold text-neutral-950 mb-3">
+                        <View className="px-6 pt-6">
+                            <Text className="text-lg font-bold text-neutral-950 mb-3">
                                 Serviços populares
                             </Text>
                             <ScrollView
@@ -213,9 +201,9 @@ export default function SearchService({ navigation, route }) {
                                     <Pressable
                                         key={service}
                                         onPress={() => setSearch(service)}
-                                        className="rounded-full bg-[#e7e7e7] px-4 py-2 mr-2"
+                                        className="rounded-full bg-[#e7e7e7] px-4 py-2.5 mr-2"
                                     >
-                                        <Text className="text-xs font-semibold text-neutral-800">
+                                        <Text className="text-sm font-semibold text-neutral-800">
                                             {service}
                                         </Text>
                                     </Pressable>
@@ -223,7 +211,7 @@ export default function SearchService({ navigation, route }) {
                             </ScrollView>
                         </View>
 
-                        <View className="flex-row items-center px-6 mt-4 gap-2">
+                        <View className="flex-row items-center px-6 mt-5 gap-2">
                             <Pressable
                                 onPress={() =>
                                     navigation.navigate("Filters", {
@@ -231,26 +219,26 @@ export default function SearchService({ navigation, route }) {
                                         onApply: (filters) => console.log("Filtros:", filters),
                                     })
                                 }
-                                className="flex-row items-center rounded-full border border-neutral-400 px-3 py-2"
+                                className="flex-row items-center rounded-full border border-neutral-400 px-3.5 py-2.5"
                             >
-                                <SlidersHorizontal size={14} color="#404040" />
-                                <Text className="text-xs font-semibold text-neutral-700 ml-1.5">
+                                <SlidersHorizontal size={15} color="#404040" />
+                                <Text className="text-sm font-semibold text-neutral-700 ml-1.5">
                                     Filtros
                                 </Text>
                             </Pressable>
 
                             <Pressable
                                 onPress={() => setSortOpen(true)}
-                                className="flex-row items-center rounded-full border border-neutral-400 px-3 py-2"
+                                className="flex-row items-center rounded-full border border-neutral-400 px-3.5 py-2.5"
                             >
-                                <Text className="text-xs font-semibold text-neutral-700">
+                                <Text className="text-sm font-semibold text-neutral-700">
                                     Ordenar por: {currentSortLabel}
                                 </Text>
-                                <ChevronDown size={14} color="#404040" className="ml-1" />
+                                <ChevronDown size={15} color="#404040" className="ml-1" />
                             </Pressable>
                         </View>
 
-                        <View className="px-6 mt-5 mb-4">
+                        <View className="px-6 mt-6 mb-4">
                             <Text className="text-xl font-bold text-neutral-950">
                                 {CATEGORY_LABELS[activeCategory] ?? "Resultados"} ({sortedResults.length})
                             </Text>
@@ -369,7 +357,7 @@ function SortBottomSheet({ visible, current, onSelect, onClose }) {
                                 className="flex-row items-center py-4"
                             >
                                 {isSelected ? (
-                                    <CheckCircle size={22} color="#946900" strokeWidth={2} />
+                                    <CheckCircle size={22} color={colors.brandDark} strokeWidth={2} />
                                 ) : (
                                     <Circle size={22} color="#a3a3a3" strokeWidth={2} />
                                 )}

@@ -1,10 +1,11 @@
 import { Modal, View, Text, Pressable } from "react-native";
 import { CheckCircle2, XCircle, AlertTriangle } from "lucide-react-native";
+import { colors } from "../theme";
 
 const ICONS = {
-  error: { Icon: XCircle, color: "#EF4444", bg: "#FEE2E2" },
-  success: { Icon: CheckCircle2, color: "#22C55E", bg: "#DCFCE7" },
-  warning: { Icon: AlertTriangle, color: "#F6C344", bg: "#FEF3C7" },
+  error: { Icon: XCircle, color: colors.danger, bg: "#FEE2E2" },
+  success: { Icon: CheckCircle2, color: colors.success, bg: "#DCFCE7" },
+  warning: { Icon: AlertTriangle, color: colors.brandDark, bg: colors.brandTint },
 };
 
 export default function AlertModal({ visible, title, message, type = "error", buttons, onClose }) {
@@ -22,7 +23,7 @@ export default function AlertModal({ visible, title, message, type = "error", bu
           </View>
 
           <Text
-            className="text-lg text-neutral-900 mb-2 text-center"
+            className="text-lg text-ink mb-2 text-center"
             style={{ fontFamily: "Poppins_700Bold" }}
           >
             {title}
@@ -30,7 +31,7 @@ export default function AlertModal({ visible, title, message, type = "error", bu
 
           {!!message && (
             <Text
-              className="text-sm text-neutral-500 text-center mb-6"
+              className="text-sm text-ink-soft text-center mb-6"
               style={{ fontFamily: "Poppins_400Regular" }}
             >
               {message}
@@ -49,13 +50,17 @@ export default function AlertModal({ visible, title, message, type = "error", bu
                   btn.style === "destructive"
                     ? "bg-red-500"
                     : btn.style === "cancel"
-                    ? "bg-neutral-100"
-                    : "bg-[#F6C344]"
+                    ? "bg-surface-alt"
+                    : "bg-brand"
                 }`}
               >
                 <Text
                   className={
-                    btn.style === "cancel" ? "text-neutral-600" : "text-black"
+                    btn.style === "cancel"
+                      ? "text-ink-soft"
+                      : btn.style === "destructive"
+                      ? "text-white"
+                      : "text-on-brand"
                   }
                   style={{ fontFamily: "Poppins_600SemiBold" }}
                 >

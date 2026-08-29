@@ -9,6 +9,8 @@ import {
 } from "react-native";
 import { ArrowLeft } from "lucide-react-native";
 import { getBusinessGiftCards } from "../services/api";
+import { colors } from "../theme";
+import logger from "../services/logger";
 
 import LoadingScreen from "../components/LoadingScreen";
 
@@ -99,7 +101,7 @@ export default function GiftCardScreen({ navigation, route }) {
       const data = await getBusinessGiftCards(businessId);
       setCards(data);
     } catch (error) {
-      console.log("Erro ao carregar cartões de presente:", error.message);
+      logger.error("Erro ao carregar cartões de presente:", error?.message);
     } finally {
       setLoading(false);
     }
@@ -124,12 +126,12 @@ export default function GiftCardScreen({ navigation, route }) {
       </View>
 
       <Text className="px-5 pt-4 pb-3 text-lg font-bold text-neutral-950">
-        Escolha seu catão
+        Escolha seu cartão
       </Text>
 
       {loading ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator color="#9f7300" size="large" />
+          <ActivityIndicator color={colors.brandDark} size="large" />
         </View>
       ) : cards.length === 0 ? (
         <View

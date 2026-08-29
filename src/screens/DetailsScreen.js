@@ -5,6 +5,7 @@ import * as Clipboard from "expo-clipboard";
 import { getBusinessById, getBusinessEmployees, getBusinessWorkingHours } from "../services/api";
 
 import LoadingScreen from "../components/LoadingScreen";
+import logger from "../services/logger";
 
 
 const DAY_LABELS = {
@@ -51,7 +52,7 @@ export default function DetailsScreen({ navigation, route }) {
             setEmployees(employeesData ?? []);
             setWorkingHours(hoursData ?? []);
         } catch (error) {
-            console.log("Erro ao carregar detalhes:", error.message);
+            logger.error("Erro ao carregar detalhes:", error?.message);
         } finally {
             setLoading(false);
         }

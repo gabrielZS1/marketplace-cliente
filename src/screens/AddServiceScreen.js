@@ -2,8 +2,10 @@ import { useEffect, useState, useMemo } from "react";
 import { View, Text, Pressable, TextInput, ScrollView, ActivityIndicator } from "react-native";
 import { X, Search, ChevronDown, ChevronUp } from "lucide-react-native";
 import { getBusinessServices } from "../services/api";
+import { colors } from "../theme";
 
 import LoadingScreen from "../components/LoadingScreen";
+import logger from "../services/logger";
 
 
 function formatPrice(price) {
@@ -32,7 +34,7 @@ export default function AddServiceScreen({ navigation, route }) {
       const categories = [...new Set(data.map((s) => s.category || "Outros"))];
       setOpenCategories({ [categories[0]]: true });
     } catch (error) {
-      console.log(error.message);
+      logger.error("Erro ao carregar serviços:", error?.message);
     } finally {
       setLoading(false);
     }
@@ -85,7 +87,7 @@ export default function AddServiceScreen({ navigation, route }) {
       </View>
 
       {loading ? (
-        <ActivityIndicator color="#9f7300" style={{ marginTop: 24 }} />
+        <ActivityIndicator color={colors.brandDark} style={{ marginTop: 24 }} />
       ) : (
         <ScrollView showsVerticalScrollIndicator={false}>
           {Object.entries(grouped).map(([category, categoryServices]) => {
@@ -129,9 +131,9 @@ export default function AddServiceScreen({ navigation, route }) {
                           <Text className="text-xs text-neutral-600 mb-2">{service.durationMinutes}m</Text>
                           <Pressable
                             onPress={() => handleReserve(service)}
-                            className="bg-[#9f7300] rounded-lg px-4 py-2"
+                            className="bg-brand rounded-lg px-4 py-2"
                           >
-                            <Text className="text-white text-xs font-bold">Reservar</Text>
+                            <Text className="text-on-brand text-xs font-bold">Reservar</Text>
                           </Pressable>
                         </View>
                       </View>

@@ -1,7 +1,8 @@
 import { useEffect, useRef } from "react";
 import { Animated, Easing, View } from "react-native";
+import { colors } from "../theme";
 
-export default function Spinner({ size = 44, color = "#9f7300" }) {
+export default function Spinner({ size = 44, color = colors.brandDark }) {
     const rotation = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {

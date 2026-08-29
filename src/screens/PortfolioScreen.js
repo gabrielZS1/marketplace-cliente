@@ -22,17 +22,17 @@ export default function PortfolioScreen({ navigation, route }) {
             <View className="flex-row px-4 gap-2 mb-4">
                 <Pressable
                     onPress={() => setActiveTab("workspace")}
-                    className={`rounded-full px-4 py-2 ${activeTab === "workspace" ? "bg-[#d4af37]" : "bg-neutral-100"}`}
+                    className={`rounded-full px-4 py-2 ${activeTab === "workspace" ? "bg-brand" : "bg-neutral-100"}`}
                 >
-                    <Text className={`text-xs font-bold ${activeTab === "workspace" ? "text-white" : "text-neutral-600"}`}>
+                    <Text className={`text-xs font-bold ${activeTab === "workspace" ? "text-on-brand" : "text-neutral-600"}`}>
                         Espaço de trabalho ({workspacePhotos.length})
                     </Text>
                 </Pressable>
                 <Pressable
                     onPress={() => setActiveTab("portfolio")}
-                    className={`rounded-full px-4 py-2 ${activeTab === "portfolio" ? "bg-[#d4af37]" : "bg-neutral-100"}`}
+                    className={`rounded-full px-4 py-2 ${activeTab === "portfolio" ? "bg-brand" : "bg-neutral-100"}`}
                 >
-                    <Text className={`text-xs font-bold ${activeTab === "portfolio" ? "text-white" : "text-neutral-600"}`}>
+                    <Text className={`text-xs font-bold ${activeTab === "portfolio" ? "text-on-brand" : "text-neutral-600"}`}>
                         Portfólio ({portfolioPhotos.length})
                     </Text>
                 </Pressable>

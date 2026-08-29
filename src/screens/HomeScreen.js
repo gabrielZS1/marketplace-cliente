@@ -16,8 +16,9 @@ import {
   ChevronRight,
   Calendar,
 } from "lucide-react-native";
-import { FlatList } from "react-native";
+import { FlatList, StyleSheet } from "react-native";
 import LoadingScreen from "../components/LoadingScreen";
+import { colors, brandGradient } from "../theme";
 
 import { getAllBusinesses, getNearbyBusinesses } from "../services/api";
 
@@ -45,14 +46,6 @@ const CATEGORY_IMAGES = {
   OTHER: require("../assets/categories/other.jpg"),
 };
 
-const ITEM_WIDTH = 85;
-const REPEAT_COUNT = 40;
-
-const repeatedCategories = Array.from({ length: REPEAT_COUNT }).flatMap(
-  (_, i) => CATEGORIES.map((c) => ({ ...c, uid: `${c.key}-${i}` })),
-);
-
-const initialCategoryIndex = Math.floor(REPEAT_COUNT / 2) * CATEGORIES.length;
 
 function RecentCard({ business, onPress }) {
   const imageUri = business.logoUrl;
@@ -115,7 +108,7 @@ function RatingBadge({ business }) {
         </Text>
       )}
       {business.reviewCount != null && (
-        <Text className="text-[7px] text-white">
+        <Text className="text-[9px] text-white">
           {business.reviewCount} avaliações
         </Text>
       )}
@@ -143,14 +136,14 @@ function OfferCard({ business, onPress }) {
         {!!business.description && (
           <Text
             numberOfLines={2}
-            className="mt-0.5 text-[7px] leading-2 text-neutral-500"
+            className="mt-0.5 text-[11px] text-neutral-500"
           >
             {business.description}
           </Text>
         )}
         {!!business.promotionText && (
-          <View className="mt-1.5 self-start rounded-full bg-[#dfbd53] px-2 py-1">
-            <Text className="text-[7px] font-bold text-[#755400]">
+          <View className="mt-1.5 self-start rounded-full bg-brand px-2 py-1">
+            <Text className="text-[9px] font-bold text-on-brand">
               {business.promotionText}
             </Text>
           </View>
@@ -164,10 +157,10 @@ function RecommendedCard({ business, onPress }) {
   return (
     <Pressable
       onPress={onPress}
-      className="mb-4 w-[268px] overflow-hidden rounded-2xl bg-[#e7e7e7]"
+      className="mr-4 w-[240px] overflow-hidden rounded-2xl bg-[#e7e7e7]"
     >
       <View>
-        <BusinessImage business={business} className="h-40 w-full" />
+        <BusinessImage business={business} className="h-36 w-full" />
         <RatingBadge business={business} />
       </View>
       <View className="px-2 pb-2 pt-1.5">
@@ -186,7 +179,7 @@ function RecommendedCard({ business, onPress }) {
           </Text>
         )}
         {!!business.highlightText && (
-          <Text className="mt-1 text-[7px] font-bold text-neutral-900">
+          <Text className="mt-1 text-[10px] font-bold text-neutral-900">
             {business.highlightText}
           </Text>
         )}
@@ -291,12 +284,12 @@ export default function HomeScreen({ navigation }) {
             setRefreshing(true);
             loadBusinesses();
           }}
-          tintColor="#a47300"
+          tintColor={colors.brandDark}
         />
       }
     >
       <LinearGradient
-        colors={["#a77905", "#8b6302", "#5b4101"]}
+        colors={brandGradient}
         className="overflow-hidden pt-12"
       >
         <Text
@@ -317,18 +310,12 @@ export default function HomeScreen({ navigation }) {
         </Pressable>
 
         <FlatList
-          data={repeatedCategories}
-          keyExtractor={(item) => item.uid}
+          data={CATEGORIES}
+          keyExtractor={(item) => item.key}
           horizontal
           showsHorizontalScrollIndicator={false}
-          initialScrollIndex={initialCategoryIndex}
-          getItemLayout={(_, index) => ({
-            length: ITEM_WIDTH,
-            offset: ITEM_WIDTH * index,
-            index,
-          })}
           className="mt-6"
-          contentContainerStyle={{ paddingRight: 12 }}
+          contentContainerStyle={{ paddingHorizontal: 16 }}
           renderItem={({ item }) => (
             <Pressable
               onPress={() => goToSearchWithCategory(item.key)}
@@ -337,8 +324,8 @@ export default function HomeScreen({ navigation }) {
               <View
                 className="h-20 w-20 rounded-full items-center justify-center bg-[#eeeeee]"
                 style={{
-                  borderWidth: 1,
-                  borderColor: "#F6C344",
+                  borderWidth: 1.5,
+                  borderColor: colors.brand,
                   padding: 2,
                 }}
               >
@@ -360,7 +347,7 @@ export default function HomeScreen({ navigation }) {
           )}
         />
 
-        <View className="mt-5 border-t border-[#F6C344]/40 px-5 pt-4"></View>
+        <View className="mt-5 border-t border-brand/40 px-5 pt-4"></View>
 
         <View className="flex-row items-center justify-between px-5 pb-3">
           <Text className="text-[11px] font-bold text-white">
@@ -412,7 +399,7 @@ export default function HomeScreen({ navigation }) {
             onPress={() => navigation.navigate("Agendamentos")}
             className="h-9 w-9 rounded-full bg-white items-center justify-center"
           >
-            <ArrowRight size={18} color="#5b4101" strokeWidth={3} />
+            <ArrowRight size={18} color={colors.brandDeep} strokeWidth={3} />
           </Pressable>
         </View>
       </LinearGradient>
@@ -444,13 +431,17 @@ export default function HomeScreen({ navigation }) {
       </View>
 
       <View
-        className=" bg-[#dcdcdc] px-3 pt-3"
-        style={{ borderTopWidth: 0.5, borderTopColor: "#737373" }}
+        className="bg-[#dcdcdc] pt-5"
+        style={{ borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: "rgba(0,0,0,0.10)" }}
       >
-        <Text className="mb-3 px-2 text-xl font-bold text-neutral-950">
+        <Text className="mb-3 px-5 text-xl font-bold text-neutral-950">
           Recomendado
         </Text>
-        <View className="flex-row flex-wrap justify-between">
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 20, paddingRight: 4 }}
+        >
           {filteredBusinesses.map((business) => (
             <RecommendedCard
               key={business.id}
@@ -458,17 +449,21 @@ export default function HomeScreen({ navigation }) {
               onPress={() => goToBusinessDetail(business.id)}
             />
           ))}
-        </View>
+        </ScrollView>
       </View>
 
       <View
-        className="border-t border-neutral-400 bg-[#dcdcdc] px-3 pt-3"
-        style={{ borderTopWidth: 0.5, borderTopColor: "#737373" }}
+        className="bg-[#dcdcdc] pt-5"
+        style={{ borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: "rgba(0,0,0,0.10)" }}
       >
-        <Text className="mb-3 px-2 text-xl font-bold text-neutral-950">
+        <Text className="mb-3 px-5 text-xl font-bold text-neutral-950">
           Perto de você
         </Text>
-        <View className="flex-row flex-wrap justify-between">
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 20, paddingRight: 4 }}
+        >
           {nearbyBusinesses.map((business) => (
             <RecommendedCard
               key={business.id}
@@ -476,27 +471,35 @@ export default function HomeScreen({ navigation }) {
               onPress={() => goToBusinessDetail(business.id)}
             />
           ))}
-        </View>
+        </ScrollView>
       </View>
 
-      <View className="bg-[#dcdcdc] px-3 pb-6 pt-3">
-        <Text className="mb-3 px-2 text-xl font-bold text-neutral-950">
+      <View
+        className="bg-[#dcdcdc] pt-5"
+        style={{ paddingBottom: 140, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: "rgba(0,0,0,0.10)" }}
+      >
+        <Text className="mb-3 px-5 text-xl font-bold text-neutral-950">
           Disponíveis hoje
         </Text>
-        <View className="flex-row flex-wrap justify-between">
-          {availableTodayBusinesses.map((business) => (
-            <RecommendedCard
-              key={business.id}
-              business={business}
-              onPress={() => goToBusinessDetail(business.id)}
-            />
-          ))}
-          {!availableTodayBusinesses.length && (
-            <Text className="px-2 text-sm text-neutral-500">
-              Nenhuma empresa disponível hoje.
-            </Text>
-          )}
-        </View>
+        {availableTodayBusinesses.length ? (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 20, paddingRight: 4 }}
+          >
+            {availableTodayBusinesses.map((business) => (
+              <RecommendedCard
+                key={business.id}
+                business={business}
+                onPress={() => goToBusinessDetail(business.id)}
+              />
+            ))}
+          </ScrollView>
+        ) : (
+          <Text className="px-5 text-sm text-neutral-500">
+            Nenhuma empresa disponível hoje.
+          </Text>
+        )}
       </View>
     </ScrollView>
   );

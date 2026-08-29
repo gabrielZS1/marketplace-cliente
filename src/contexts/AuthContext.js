@@ -1,5 +1,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import secureStorage from "../services/secureStorage";
+import logger from "../services/logger";
 import {
   login as loginApi,
   register as registerApi,
@@ -11,6 +13,10 @@ import { registerForPushNotificationsAsync } from "../../pushNotifications";
 
 const AuthContext = createContext(null);
 
+const TOKEN_KEY = "@glowly:token";
+const REFRESH_KEY = "@glowly:refreshToken";
+const USER_KEY = "@glowly:user";
+
 async function setupPushNotifications(token) {
   try {
     const pushToken = await registerForPushNotificationsAsync();
@@ -18,7 +24,33 @@ async function setupPushNotifications(token) {
       await updatePushToken(token, pushToken);
     }
   } catch (err) {
-    console.error("Erro ao configurar push notifications:", err);
+    logger.error("Erro ao configurar push notifications:", err?.message);
+  }
+}
+
+/**
+ * Move dados de sessão gravados em texto puro no AsyncStorage (versões antigas
+ * do app) para o armazenamento seguro, uma única vez.
+ */
+async function migrateLegacyAuth() {
+  try {
+    const legacyToken = await AsyncStorage.getItem(TOKEN_KEY);
+    if (!legacyToken) return;
+
+    const [legacyRefresh, legacyUser] = await Promise.all([
+      AsyncStorage.getItem(REFRESH_KEY),
+      AsyncStorage.getItem(USER_KEY),
+    ]);
+
+    await Promise.all([
+      secureStorage.setItem(TOKEN_KEY, legacyToken),
+      legacyRefresh && secureStorage.setItem(REFRESH_KEY, legacyRefresh),
+      legacyUser && secureStorage.setItem(USER_KEY, legacyUser),
+    ]);
+
+    await AsyncStorage.multiRemove([TOKEN_KEY, REFRESH_KEY, USER_KEY]);
+  } catch (err) {
+    logger.error("Falha ao migrar sessão para armazenamento seguro:", err?.message);
   }
 }
 
@@ -33,18 +65,16 @@ export function AuthProvider({ children }) {
 
     registerAuthHandlers({
       getRefreshToken: async () => {
-        return await AsyncStorage.getItem("@glowly:refreshToken");
+        return await secureStorage.getItem(REFRESH_KEY);
       },
       onTokensRefreshed: async (data) => {
-        await AsyncStorage.setItem("@glowly:token", data.token);
-        await AsyncStorage.setItem("@glowly:refreshToken", data.refreshToken);
+        await secureStorage.setItem(TOKEN_KEY, data.token);
+        await secureStorage.setItem(REFRESH_KEY, data.refreshToken);
         setToken(data.token);
         setRefreshToken(data.refreshToken);
       },
       onRefreshFailed: async () => {
-        await AsyncStorage.removeItem("@glowly:token");
-        await AsyncStorage.removeItem("@glowly:refreshToken");
-        await AsyncStorage.removeItem("@glowly:user");
+        await clearStoredAuth();
         setToken(null);
         setRefreshToken(null);
         setUser(null);
@@ -52,19 +82,31 @@ export function AuthProvider({ children }) {
     });
   }, []);
 
+  async function clearStoredAuth() {
+    await Promise.all([
+      secureStorage.removeItem(TOKEN_KEY),
+      secureStorage.removeItem(REFRESH_KEY),
+      secureStorage.removeItem(USER_KEY),
+    ]);
+  }
+
   async function loadStoredAuth() {
     try {
-      const storedToken = await AsyncStorage.getItem("@glowly:token");
-      const storedRefreshToken = await AsyncStorage.getItem("@glowly:refreshToken");
-      const storedUser = await AsyncStorage.getItem("@glowly:user");
+      await migrateLegacyAuth();
+
+      const storedToken = await secureStorage.getItem(TOKEN_KEY);
+      const storedRefreshToken = await secureStorage.getItem(REFRESH_KEY);
+      const storedUser = await secureStorage.getItem(USER_KEY);
 
       if (storedToken && storedUser) {
         setToken(storedToken);
         setRefreshToken(storedRefreshToken);
         setUser(JSON.parse(storedUser));
 
-        setupPushNotifications(storedToken); // <- NOVO, quando reabre o app já logado
+        setupPushNotifications(storedToken);
       }
+    } catch (err) {
+      logger.error("Erro ao carregar sessão:", err?.message);
     } finally {
       setLoading(false);
     }
@@ -72,14 +114,14 @@ export function AuthProvider({ children }) {
 
   async function persist(data) {
     const userData = { name: data.name, role: data.role, address: data.address };
-    await AsyncStorage.setItem("@glowly:token", data.token);
-    await AsyncStorage.setItem("@glowly:refreshToken", data.refreshToken);
-    await AsyncStorage.setItem("@glowly:user", JSON.stringify(userData));
+    await secureStorage.setItem(TOKEN_KEY, data.token);
+    await secureStorage.setItem(REFRESH_KEY, data.refreshToken);
+    await secureStorage.setItem(USER_KEY, JSON.stringify(userData));
     setToken(data.token);
     setRefreshToken(data.refreshToken);
     setUser(userData);
 
-    setupPushNotifications(data.token); // <- NOVO, logo após login/cadastro
+    setupPushNotifications(data.token);
   }
 
   async function signIn(email, password) {
@@ -87,14 +129,21 @@ export function AuthProvider({ children }) {
     await persist(data);
   }
 
-  async function signUp(name, email, phone, password) {
-    const data = await registerApi(name, email, phone, password);
+  async function signUp(name, email, phone, password, acceptedTerms) {
+    const data = await registerApi(name, email, phone, password, acceptedTerms);
     await persist(data);
   }
 
+  function updateLocalUser(patch) {
+    setUser((prev) => {
+      const next = { ...prev, ...patch };
+      secureStorage.setItem(USER_KEY, JSON.stringify(next));
+      return next;
+    });
+  }
+
   function updateLocalAddress(address) {
-    setUser((prev) => ({ ...prev, address }));
-    AsyncStorage.setItem("@glowly:user", JSON.stringify({ ...user, address }));
+    updateLocalUser({ address });
   }
 
   async function signOut() {
@@ -105,16 +154,25 @@ export function AuthProvider({ children }) {
         // mesmo que falhe no backend, limpa localmente
       }
     }
-    await AsyncStorage.removeItem("@glowly:token");
-    await AsyncStorage.removeItem("@glowly:refreshToken");
-    await AsyncStorage.removeItem("@glowly:user");
+    await clearStoredAuth();
     setToken(null);
     setRefreshToken(null);
     setUser(null);
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, signIn, signUp, signOut, updateLocalAddress }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        loading,
+        signIn,
+        signUp,
+        signOut,
+        updateLocalAddress,
+        updateLocalUser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

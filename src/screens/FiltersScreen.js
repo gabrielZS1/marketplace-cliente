@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { Tag, Home, Monitor } from "lucide-react-native";
+import { colors } from "../theme";
 
 const FILTERS = [
   {
@@ -67,18 +68,18 @@ export default function FiltersScreen({ navigation, route }) {
                 onPress={() => toggleFilter(key)}
                 className={`flex-row items-center rounded-lg px-3 py-2 border ${
                   isActive
-                    ? "bg-[#946900] border-[#946900]"
+                    ? "bg-brand border-brand"
                     : "bg-white border-neutral-300"
                 }`}
               >
                 <Icon
                   size={14}
-                  color={isActive ? "#ffffff" : "#525252"}
+                  color={isActive ? colors.onBrand : "#525252"}
                   strokeWidth={2}
                 />
                 <Text
                   className={`ml-2 text-xs font-semibold ${
-                    isActive ? "text-white" : "text-neutral-700"
+                    isActive ? "text-on-brand" : "text-neutral-700"
                   }`}
                 >
                   {label}
@@ -99,9 +100,9 @@ export default function FiltersScreen({ navigation, route }) {
 
         <Pressable
           onPress={handleApply}
-          className="flex-1 items-center justify-center rounded-xl py-3.5 bg-[#946900]"
+          className="flex-1 items-center justify-center rounded-xl py-3.5 bg-brand"
         >
-          <Text className="text-sm font-bold text-white">Ver resultados</Text>
+          <Text className="text-sm font-bold text-on-brand">Ver resultados</Text>
         </Pressable>
       </View>
     </View>

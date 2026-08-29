@@ -20,6 +20,8 @@ import {
 
 import { useAuth } from "../contexts/AuthContext";
 import { showAlert } from "../services/alert";
+import logger from "../services/logger";
+import { colors } from "../theme";
 
 function formatDateParam(date) {
   const y = date.getFullYear();
@@ -89,16 +91,10 @@ export default function BookingScreen({ navigation, route }) {
         getBusinessWorkingHours(businessId, token),
       ]);
 
-      console.log("========== FUNCIONÁRIOS ==========");
-      console.log(employeesData);
-
-      console.log("========== HORÁRIOS ==========");
-      console.log(hoursData);
-
       setEmployees(employeesData || []);
       setWorkingHours(hoursData || []);
     } catch (error) {
-      console.log("ERRO AO CARREGAR DADOS:", error.message);
+      logger.error("Erro ao carregar dados do agendamento:", error?.message);
 
       setEmployees([]);
       setWorkingHours([]);
@@ -129,15 +125,6 @@ export default function BookingScreen({ navigation, route }) {
     try {
       const dateParam = formatDateParam(selectedDate);
 
-      console.log("========== BUSCANDO DISPONIBILIDADE ==========");
-      console.log("Business:", businessId);
-      console.log("Data:", dateParam);
-      console.log("Serviço:", service.id);
-      console.log(
-        "Funcionário:",
-        selectedEmployee?.id || "QUALQUER"
-      );
-
       const data = await getAvailability(
         businessId,
         dateParam,
@@ -146,14 +133,9 @@ export default function BookingScreen({ navigation, route }) {
         token
       );
 
-      console.log("HORÁRIOS RECEBIDOS:", data);
-
       setSlots(data || []);
     } catch (error) {
-      console.log(
-        "ERRO AO BUSCAR DISPONIBILIDADE:",
-        error.message
-      );
+      logger.error("Erro ao buscar disponibilidade:", error?.message);
 
       setSlots([]);
     } finally {
@@ -192,10 +174,7 @@ export default function BookingScreen({ navigation, route }) {
           return;
         }
       } catch (error) {
-        console.log(
-          "Erro procurando próxima data:",
-          error.message
-        );
+        logger.error("Erro procurando próxima data:", error?.message);
       }
     }
 
@@ -253,10 +232,13 @@ export default function BookingScreen({ navigation, route }) {
       `${formatDateParam(selectedDate)}T${selectedSlot.time}:00-03:00`;
 
     navigation.navigate("BookingConfirmation", {
+      businessId,
       business,
       service,
 
       employee: selectedEmployee,
+
+      notes: notes.trim(),
 
       appointmentDate,
 
@@ -324,7 +306,7 @@ export default function BookingScreen({ navigation, route }) {
               <View
                 className={`w-16 h-16 rounded-full items-center justify-center ${
                   selectedEmployee === null
-                    ? "bg-[#e9e9e9] border-2 border-[#9f7300]"
+                    ? "bg-[#e9e9e9] border-2 border-brand"
                     : "bg-[#e9e9e9]"
                 }`}
               >
@@ -363,7 +345,7 @@ export default function BookingScreen({ navigation, route }) {
                   <View
                     className={`w-16 h-16 rounded-full items-center justify-center overflow-hidden ${
                       isSelected
-                        ? "bg-neutral-300 border-2 border-[#9f7300]"
+                        ? "bg-neutral-300 border-2 border-brand"
                         : "bg-neutral-300"
                     }`}
                   >
@@ -415,7 +397,7 @@ export default function BookingScreen({ navigation, route }) {
         {loadingSlots ? (
           <View className="items-center py-8">
             <ActivityIndicator
-              color="#9f7300"
+              color={colors.brandDark}
             />
           </View>
         ) : !hasAvailableSlots ? (
@@ -430,9 +412,9 @@ export default function BookingScreen({ navigation, route }) {
 
             <Pressable
               onPress={goToNextAvailableDate}
-              className="bg-[#9f7300] rounded-full px-5 py-2.5 mt-3"
+              className="bg-brand rounded-full px-5 py-2.5 mt-3"
             >
-              <Text className="text-white text-xs font-bold">
+              <Text className="text-on-brand text-xs font-bold">
                 Próxima data disponível
               </Text>
             </Pressable>
@@ -471,14 +453,14 @@ export default function BookingScreen({ navigation, route }) {
                   }
                   className={`mr-3 px-4 py-3 rounded-xl border-2 ${
                     isSelected
-                      ? "bg-[#bd8c12] border-[#b6870f]"
-                      : "bg-white border-[#d4af37]"
+                      ? "bg-brand border-brand"
+                      : "bg-white border-brand"
                   }`}
                 >
                   <Text
                     className={`text-sm font-bold ${
                       isSelected
-                        ? "text-white"
+                        ? "text-on-brand"
                         : "text-neutral-950"
                     }`}
                   >
@@ -529,7 +511,7 @@ export default function BookingScreen({ navigation, route }) {
             <View className="flex-row items-center">
               <View className="w-7 h-7 rounded-full bg-white items-center justify-center mr-2">
                 <Users
-                  color="#9f7300"
+                  color={colors.brandDark}
                   size={14}
                 />
               </View>
@@ -585,7 +567,7 @@ export default function BookingScreen({ navigation, route }) {
             })
           }
         >
-          <Text className="text-sm font-bold text-[#9f7300]">
+          <Text className="text-sm font-bold text-brand-dark">
             + Adicionar outro serviço
           </Text>
         </Pressable>
@@ -633,11 +615,11 @@ export default function BookingScreen({ navigation, route }) {
             }
             className={`rounded-xl px-8 py-3.5 ${
               selectedSlot
-                ? "bg-[#bb890b]"
-                : "bg-neutral-500"
+                ? "bg-brand"
+                : "bg-neutral-300"
             }`}
           >
-            <Text className="text-white font-bold">
+            <Text className={`font-bold ${selectedSlot ? "text-on-brand" : "text-neutral-500"}`}>
               {submitting
                 ? "Reservando..."
                 : "Reservar"}

@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { View, Text, Pressable, ScrollView, Image, ActivityIndicator } from "react-native";
 import { ArrowLeft, Check, ChevronRight, Star, Users } from "lucide-react-native";
 import { getBusinessEmployees, getAvailability } from "../services/api";
+import { colors } from "../theme";
+import logger from "../services/logger";
 
 import LoadingScreen from "../components/LoadingScreen";
 
@@ -58,7 +60,7 @@ export default function SelectEmployeeScreen({ navigation, route }) {
 
       setStatusByEmployee(statuses);
     } catch (error) {
-      console.log(error.message);
+      logger.error("Erro ao carregar equipe:", error?.message);
     } finally {
       setLoading(false);
     }
@@ -95,7 +97,7 @@ export default function SelectEmployeeScreen({ navigation, route }) {
       <Text className="text-2xl font-bold text-neutral-950 mb-6">Selecionar membro da equipe</Text>
 
       {loading ? (
-        <ActivityIndicator color="#9f7300" style={{ marginTop: 24 }} />
+        <ActivityIndicator color={colors.brandDark} style={{ marginTop: 24 }} />
       ) : (
         <ScrollView showsVerticalScrollIndicator={false}>
           <Pressable
@@ -103,15 +105,15 @@ export default function SelectEmployeeScreen({ navigation, route }) {
             className="flex-row items-center py-4 border-b border-neutral-100"
           >
             <View
-              className={`w-12 h-12 rounded-full bg-[#f3e6c8] items-center justify-center ${selectedEmployeeId == null ? "border-2 border-[#9f7300]" : ""
+              className={`w-12 h-12 rounded-full bg-brand-tint items-center justify-center ${selectedEmployeeId == null ? "border-2 border-brand" : ""
                 }`}
             >
-              <Users color="#9f7300" size={20} />
+              <Users color={colors.brandDark} size={20} />
             </View>
             <Text className="flex-1 ml-3 text-base font-semibold text-neutral-950">
               Sem preferência de equipe
             </Text>
-            {selectedEmployeeId == null && <Check color="#9f7300" size={20} />}
+            {selectedEmployeeId == null && <Check color={colors.brandDark} size={20} />}
           </Pressable>
 
           {employees.map((employee) => {
@@ -124,7 +126,7 @@ export default function SelectEmployeeScreen({ navigation, route }) {
               >
                 <View className="relative">
                   <View
-                    className={`w-12 h-12 rounded-full bg-neutral-300 overflow-hidden items-center justify-center ${isSelected ? "border-2 border-[#9f7300]" : ""
+                    className={`w-12 h-12 rounded-full bg-neutral-300 overflow-hidden items-center justify-center ${isSelected ? "border-2 border-brand" : ""
                       }`}
                   >
                     {employee.photoUrl ? (
@@ -132,9 +134,9 @@ export default function SelectEmployeeScreen({ navigation, route }) {
                     ) : null}
                   </View>
                   {employee.rating != null && (
-                    <View className="absolute -bottom-1 -left-1 flex-row items-center bg-[#f3e6c8] rounded-full px-1.5 py-0.5">
-                      <Star color="#9f7300" fill="#9f7300" size={8} />
-                      <Text className="text-[9px] font-bold text-[#9f7300] ml-0.5">
+                    <View className="absolute -bottom-1 -left-1 flex-row items-center bg-brand-tint rounded-full px-1.5 py-0.5">
+                      <Star color={colors.brandDark} fill={colors.brandDark} size={8} />
+                      <Text className="text-[9px] font-bold text-brand-dark ml-0.5">
                         {employee.rating.toFixed(1).replace(".", ",")}
                       </Text>
                     </View>
@@ -147,7 +149,7 @@ export default function SelectEmployeeScreen({ navigation, route }) {
                 </View>
 
                 {isSelected ? (
-                  <Check color="#9f7300" size={20} />
+                  <Check color={colors.brandDark} size={20} />
                 ) : (
                   <ChevronRight color="#a3a3a3" size={20} />
                 )}

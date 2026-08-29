@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { View, Text, TextInput, Pressable, Image, ScrollView, SafeAreaView } from "react-native";
+import { View, Text, TextInput, Pressable, Image, ScrollView } from "react-native";
 import { ArrowLeft, Star, Camera, X } from "lucide-react-native";
 import { useAuth } from "../contexts/AuthContext";
 import { createReview } from "../services/api";
 import { showAlert } from "../services/alert";
 import { useImagePicker } from "../hooks/useImagePicker";
 import LoadingScreen from "../components/LoadingScreen";
+import { colors } from "../theme";
 
 export default function CreateReviewScreen({ navigation, route }) {
   const { appointmentId, businessName, serviceName, employeeName } = route.params;
@@ -45,15 +46,18 @@ export default function CreateReviewScreen({ navigation, route }) {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
-      <View className="flex-row items-center px-5 pt-2 pb-4">
-        <Pressable onPress={() => navigation.goBack()} className="p-1">
-          <ArrowLeft size={24} color="#0a0a0a" strokeWidth={2.5} />
+    <View className="flex-1 bg-white">
+      <View className="flex-row items-center px-5 pt-14 pb-4">
+        <Pressable
+          onPress={() => navigation.goBack()}
+          className="w-10 h-10 items-center justify-center rounded-full bg-surface-alt"
+        >
+          <ArrowLeft size={20} color="#0a0a0a" strokeWidth={2.5} />
         </Pressable>
-        <Text className="text-lg font-bold text-neutral-950 ml-3">Avaliar atendimento</Text>
+        <Text className="text-xl font-bold text-neutral-950 ml-3">Avaliar atendimento</Text>
       </View>
 
-      <ScrollView className="px-5" showsVerticalScrollIndicator={false}>
+      <ScrollView className="px-5" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingTop: 8, paddingBottom: 24 }}>
         <Text className="text-sm text-neutral-500">
           {serviceName} — {businessName}
         </Text>
@@ -67,8 +71,8 @@ export default function CreateReviewScreen({ navigation, route }) {
             <Pressable key={star} onPress={() => setRating(star)}>
               <Star
                 size={32}
-                color="#d4af37"
-                fill={star <= rating ? "#d4af37" : "transparent"}
+                color={colors.brand}
+                fill={star <= rating ? colors.brand : "transparent"}
                 strokeWidth={1.5}
               />
             </Pressable>
@@ -111,11 +115,11 @@ export default function CreateReviewScreen({ navigation, route }) {
 
         <Pressable
           onPress={handleSubmit}
-          className="bg-[#d8a420] rounded-2xl h-14 items-center justify-center mt-8 mb-10"
+          className="bg-brand rounded-2xl h-14 items-center justify-center mt-8 mb-10"
         >
-          <Text className="text-white text-base font-bold">Enviar avaliação</Text>
+          <Text className="text-on-brand text-base font-bold">Enviar avaliação</Text>
         </Pressable>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }

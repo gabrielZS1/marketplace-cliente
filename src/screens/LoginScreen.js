@@ -49,12 +49,12 @@ export default function LoginScreen({ navigation }) {
     }
 
     if (password.length < 8) {
-      showAlert("Erro", "Senha inválida.");
+      showAlert("Erro", "A senha deve ter pelo menos 8 caracteres.");
       return;
     }
 
-    if (password.length > 8) {
-      showAlert("Erro", "Senha inválida.");
+    if (password.length > 64) {
+      showAlert("Erro", "Senha muito longa.");
       return;
     }
 
@@ -74,9 +74,7 @@ export default function LoginScreen({ navigation }) {
 
   if (loading) {
     return <LoadingScreen />;
-}
-
-//curl -fsSL https://claude.ai/install.sh | bash
+  }
 
   return (
     <KeyboardAvoidingView
@@ -154,7 +152,7 @@ export default function LoginScreen({ navigation }) {
                 autoCorrect={false}
                 autoComplete="current-password"
                 textContentType="password"
-                maxLength={8}
+                maxLength={64}
                 className="flex-1 ml-3 text-base text-neutral-900"
                 style={{ color: "#171717" }}
                 onChangeText={(text) => setPassword(text.replace(/\s/g, ""))}
@@ -168,8 +166,12 @@ export default function LoginScreen({ navigation }) {
                 )}
               </TouchableOpacity>
             </View>
-            <Pressable disabled={loading} className="self-end mt-4">
-              <Text className="text-[#F6C344] font-semibold">
+            <Pressable
+              disabled={loading}
+              onPress={() => navigation.navigate("ForgotPassword")}
+              className="self-end mt-4"
+            >
+              <Text className="text-brand-dark font-semibold">
                 Esqueceu a senha?
               </Text>
             </Pressable>
@@ -182,7 +184,7 @@ export default function LoginScreen({ navigation }) {
                 opacity: pressed ? 0.85 : 1,
               })}
               className={`rounded-2xl h-14 justify-center items-center mt-10 ${
-                loading ? "bg-neutral-300" : "bg-[#F6C344]"
+                loading ? "bg-neutral-300" : "bg-brand"
               }`}
             >
               <Text className="text-black text-lg font-bold">
@@ -224,7 +226,7 @@ export default function LoginScreen({ navigation }) {
             >
               <Text className="text-neutral-500">
                 Não possui conta?
-                <Text className="text-[#F6C344] font-bold"> Cadastre-se</Text>
+                <Text className="text-brand-dark font-bold"> Cadastre-se</Text>
               </Text>
             </Pressable>
           </View>

@@ -11,8 +11,10 @@ import {
 import { ArrowLeft, Star, Search, Info } from "lucide-react-native";
 import { getBusinessById, getBusinessServices } from "../services/api";
 import { showAlert } from "../services/alert";
+import { colors } from "../theme";
 
 import LoadingScreen from "../components/LoadingScreen";
+import logger from "../services/logger";
 
 const TABS = [
   "SERVIÇOS",
@@ -48,9 +50,9 @@ function ServiceRow({ service, onBook }) {
         </Text>
         <Pressable
           onPress={() => onBook(service)}
-          className="bg-[#9f7300] rounded-lg px-4 py-2"
+          className="bg-brand rounded-lg px-4 py-2"
         >
-          <Text className="text-white text-xs font-bold">Reservar</Text>
+          <Text className="text-on-brand text-xs font-bold">Reservar</Text>
         </Pressable>
       </View>
     </View>
@@ -81,7 +83,7 @@ export default function BusinessDetailScreen({ navigation, route }) {
       setBusiness(businessData);
       setServices(servicesData);
     } catch (error) {
-      console.log(error.message);
+      logger.error("Erro ao carregar estabelecimento:", error?.message);
     } finally {
       setLoading(false);
     }
@@ -131,7 +133,7 @@ export default function BusinessDetailScreen({ navigation, route }) {
   if (loading || !business) {
     return (
       <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator color="#9f7300" size="large" />
+        <ActivityIndicator color={colors.brandDark} size="large" />
       </View>
     );
   }
@@ -209,8 +211,8 @@ export default function BusinessDetailScreen({ navigation, route }) {
       <View className="px-5 mt-4">
         {business.featured && (
           <View className="flex-row items-center mb-2">
-            <Star color="#9f7300" fill="#9f7300" size={12} />
-            <Text className="ml-1.5 text-xs font-semibold text-[#9f7300]">
+            <Star color={colors.brand} fill={colors.brand} size={12} />
+            <Text className="ml-1.5 text-xs font-semibold text-brand-dark">
               Recomendado pela Glowly
             </Text>
           </View>
@@ -227,8 +229,8 @@ export default function BusinessDetailScreen({ navigation, route }) {
                 <Star
                   key={n}
                   size={16}
-                  color="#f59e0b"
-                  fill={n <= Math.round(business.rating) ? "#f59e0b" : "none"}
+                  color={colors.brand}
+                  fill={n <= Math.round(business.rating) ? colors.brand : "none"}
                 />
               ))}
             </View>
@@ -236,7 +238,7 @@ export default function BusinessDetailScreen({ navigation, route }) {
               {business.rating.toFixed(1).replace(".", ",")}
             </Text>
             {business.reviewCount != null && business.reviewCount > 0 && (
-              <Text className="ml-1 text-sm text-[#9f7300] font-semibold">
+              <Text className="ml-1 text-sm text-brand-dark font-semibold">
                 {business.reviewCount} avaliações
               </Text>
             )}
@@ -307,20 +309,20 @@ export default function BusinessDetailScreen({ navigation, route }) {
           <View className="flex-row gap-2 mb-5">
             <Pressable
               onPress={() => setServicesFilter("popular")}
-              className={`rounded-full px-4 py-2 border ${servicesFilter === "popular" ? "bg-[#9f7300] border-[#9f7300]" : "bg-white border-neutral-300"}`}
+              className={`rounded-full px-4 py-2 border ${servicesFilter === "popular" ? "bg-brand border-brand" : "bg-white border-neutral-300"}`}
             >
               <Text
-                className={`text-xs font-bold ${servicesFilter === "popular" ? "text-white" : "text-neutral-700"}`}
+                className={`text-xs font-bold ${servicesFilter === "popular" ? "text-on-brand" : "text-neutral-700"}`}
               >
                 Serviços populares
               </Text>
             </Pressable>
             <Pressable
               onPress={() => setServicesFilter("other")}
-              className={`rounded-full px-4 py-2 border ${servicesFilter === "other" ? "bg-[#9f7300] border-[#9f7300]" : "bg-white border-neutral-300"}`}
+              className={`rounded-full px-4 py-2 border ${servicesFilter === "other" ? "bg-brand border-brand" : "bg-white border-neutral-300"}`}
             >
               <Text
-                className={`text-xs font-bold ${servicesFilter === "other" ? "text-white" : "text-neutral-700"}`}
+                className={`text-xs font-bold ${servicesFilter === "other" ? "text-on-brand" : "text-neutral-700"}`}
               >
                 Outros serviços
               </Text>

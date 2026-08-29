@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Pressable,
   ScrollView,
   Text,
@@ -12,23 +11,26 @@ import { useAuth } from "../contexts/AuthContext";
 
 import { ArrowLeft } from "lucide-react-native";
 import { createAppointment, getBusinessById } from "../services/api";
+import { showAlert } from "../services/alert";
+import logger from "../services/logger";
+import { colors } from "../theme";
 
 export default function BookingConfirmationScreen({ route, navigation }) {
-  console.log("PARAMS RECEBIDOS:", route.params);
-
-  const [business, setBusiness] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const { token } = useAuth();
-
   const {
     businessId,
+    business: businessParam,
     service,
     employee,
+    notes,
     appointmentDate,
     dateFormatted,
     timeFormatted,
     endTimeFormatted,
   } = route.params;
+
+  const [business, setBusiness] = useState(businessParam ?? null);
+  const [loading, setLoading] = useState(false);
+  const { token } = useAuth();
 
   useEffect(() => {
     async function loadBusiness() {
@@ -36,7 +38,7 @@ export default function BookingConfirmationScreen({ route, navigation }) {
         const data = await getBusinessById(businessId);
         setBusiness(data);
       } catch (error) {
-        console.log(error);
+        logger.error("Erro ao carregar estabelecimento:", error?.message);
       }
     }
 
@@ -54,19 +56,14 @@ export default function BookingConfirmationScreen({ route, navigation }) {
   const servicePriceFormatted = formatCurrency(service?.price);
 
   async function handleConfirmBooking() {
-    console.log("========== AUTH DEBUG ==========");
-    console.log("TOKEN EXISTE:", !!token);
-    console.log("TOKEN:", token ? "TEM TOKEN" : "SEM TOKEN");
-    console.log("TOKEN TAMANHO:", token?.length);
-    console.log("================================");
+    const trimmedNotes = notes?.trim();
 
     const payload = {
       serviceId: service?.id,
       employeeId: employee?.id ?? null,
       startsAt: appointmentDate,
+      ...(trimmedNotes ? { notes: trimmedNotes } : {}),
     };
-
-    console.log("PAYLOAD:", payload);
 
     setLoading(true);
 
@@ -79,11 +76,12 @@ export default function BookingConfirmationScreen({ route, navigation }) {
         timeFormatted,
       });
     } catch (error) {
-      console.error("Erro ao agendar:", error);
+      logger.error("Erro ao agendar:", error?.message);
 
-      Alert.alert(
+      showAlert(
         "Erro no Agendamento",
-        "Não foi possível confirmar seu agendamento. Tente novamente.",
+        error?.message ||
+          "Não foi possível confirmar seu agendamento. Tente novamente.",
       );
     } finally {
       setLoading(false);
@@ -117,7 +115,7 @@ export default function BookingConfirmationScreen({ route, navigation }) {
         </Text>
 
         <View
-          className="mt-6 rounded-3xl bg-[#dbdbdb] p-8"
+          className="mt-6 rounded-3xl bg-surface-alt p-8"
           style={{
             shadowColor: "#000",
             shadowOffset: { width: 8, height: 4 },
@@ -158,7 +156,7 @@ export default function BookingConfirmationScreen({ route, navigation }) {
 
         <View className="flex-1 min-h-[120px]" />
 
-        <View className="rounded-2xl bg-[#D8BE7A] p-6 mb-4">
+        <View className="rounded-2xl bg-brand-tint p-6 mb-4">
           <Text className="text-sm font-bold text-neutral-950">
             Garanta sua vaga agora, pague depois
           </Text>
@@ -171,12 +169,12 @@ export default function BookingConfirmationScreen({ route, navigation }) {
         <Pressable
           onPress={handleConfirmBooking}
           disabled={loading}
-          className="w-full rounded-xl bg-[#bd9020] py-3.5 items-center justify-center active:opacity-90"
+          className="w-full rounded-xl bg-brand py-3.5 items-center justify-center active:opacity-90"
         >
           {loading ? (
-            <ActivityIndicator color="#FFFFFF" />
+            <ActivityIndicator color={colors.onBrand} />
           ) : (
-            <Text className="text-base font-bold text-white">
+            <Text className="text-base font-bold text-on-brand">
               Confirmar e agendar
             </Text>
           )}

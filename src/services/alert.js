@@ -12,6 +12,18 @@ export function showAlert(title, message, onPress) {
   }
 }
 
+export function showSuccess(title, message, onPress) {
+  const show = getAlertHandler();
+  if (show) {
+    show({
+      type: "success",
+      title,
+      message,
+      buttons: [{ text: "OK", onPress, style: "primary" }],
+    });
+  }
+}
+
 export function showConfirm(title, message, onConfirm) {
   const show = getAlertHandler();
   if (show) {

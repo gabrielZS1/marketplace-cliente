@@ -15,6 +15,8 @@ import {
 } from "react-native";
 import { ArrowLeft, Share2, Heart, Flag, SlidersHorizontal, ChevronDown, Star, UserCircle, X, Check, MoreHorizontal } from "lucide-react-native";
 import { getBusinessReviews } from "../services/api";
+import { colors } from "../theme";
+import logger from "../services/logger";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
@@ -25,8 +27,8 @@ function StarRow({ rating, size = 16 }) {
                 <Star
                     key={star}
                     size={size}
-                    color="#d4af37"
-                    fill={star <= Math.round(rating) ? "#d4af37" : "transparent"}
+                    color={colors.brand}
+                    fill={star <= Math.round(rating) ? colors.brand : "transparent"}
                     strokeWidth={1.5}
                 />
             ))}
@@ -39,10 +41,10 @@ function RatingBar({ star, count, total }) {
     return (
         <View className="flex-row items-center mb-1.5">
             <Text className="text-xs text-neutral-600 w-4 mr-2">{star}</Text>
-            <Star size={11} color="#d4af37" fill="#d4af37" strokeWidth={1.5} />
+            <Star size={11} color={colors.brand} fill={colors.brand} strokeWidth={1.5} />
             <View className="flex-1 h-2 bg-neutral-300 rounded-full mx-2 overflow-hidden">
                 <View
-                    className="h-full bg-[#d4af37] rounded-full"
+                    className="h-full bg-brand rounded-full"
                     style={{ width: `${percentage}%` }}
                 />
             </View>
@@ -55,7 +57,7 @@ function CheckBox({ checked }) {
     return (
         <View
             className={`w-5 h-5 rounded-md items-center justify-center mr-2 ${
-                checked ? "bg-[#d4af37]" : "border border-neutral-300 bg-white"
+                checked ? "bg-brand" : "border border-neutral-300 bg-white"
             }`}
         >
             {checked && <Check size={14} color="#fff" strokeWidth={3} />}
@@ -78,7 +80,7 @@ function ReviewCard({ review }) {
         ? review.clientName.split(" ").map((n) => n[0]).slice(0, 1).join("").toUpperCase()
         : "?";
 
-    const COLORS = ["#946900", "#2563eb", "#16a34a", "#dc2626", "#7c3aed", "#0891b2"];
+    const COLORS = [colors.brandDark, "#2563eb", "#16a34a", "#dc2626", "#7c3aed", "#0891b2"];
     const colorIndex = review.clientName?.charCodeAt(0) % COLORS.length ?? 0;
     const avatarColor = COLORS[colorIndex];
 
@@ -246,7 +248,7 @@ function PhotoViewerModal({ visible, photos, initialIndex, onClose }) {
                     <View className="flex-row items-center">
                         <View
                             className="w-10 h-10 rounded-full items-center justify-center mr-3"
-                            style={{ backgroundColor: "#946900" }}
+                            style={{ backgroundColor: colors.brandDark }}
                         >
                             <Text className="text-white font-bold text-sm">{initials}</Text>
                         </View>
@@ -420,7 +422,7 @@ function FiltersModal({ visible, onClose, starCounts, employees, draftStars, set
                                 </Text>
                                 <Text className="text-xs text-neutral-400">Qualquer funcionário</Text>
                             </View>
-                            {draftEmployee === null && <Check size={18} color="#d4af37" strokeWidth={3} />}
+                            {draftEmployee === null && <Check size={18} color={colors.brandDark} strokeWidth={3} />}
                         </Pressable>
 
                         {employees.map((name) => (
@@ -438,7 +440,7 @@ function FiltersModal({ visible, onClose, starCounts, employees, draftStars, set
                                     <Text className="text-sm font-semibold text-neutral-900">{name}</Text>
                                     <Text className="text-xs text-neutral-400">Barbeiro</Text>
                                 </View>
-                                {draftEmployee === name && <Check size={18} color="#d4af37" strokeWidth={3} />}
+                                {draftEmployee === name && <Check size={18} color={colors.brandDark} strokeWidth={3} />}
                             </Pressable>
                         ))}
                     </ScrollView>
@@ -453,9 +455,9 @@ function FiltersModal({ visible, onClose, starCounts, employees, draftStars, set
                         </Pressable>
                         <Pressable
                             onPress={onApply}
-                            className="flex-1 items-center justify-center rounded-xl bg-[#946900] py-3.5"
+                            className="flex-1 items-center justify-center rounded-xl bg-brand py-3.5"
                         >
-                            <Text className="text-sm font-bold text-white">Ver resultados</Text>
+                            <Text className="text-sm font-bold text-on-brand">Ver resultados</Text>
                         </Pressable>
                     </View>
                 </Animated.View>
@@ -495,7 +497,7 @@ export default function ReviewsScreen({ navigation, route }) {
     if (loading) {
         return (
             <View className="flex-1 items-center justify-center bg-white">
-                <ActivityIndicator color="#9f7300" size="large" />
+                <ActivityIndicator color={colors.brandDark} size="large" />
             </View>
         );
     }
@@ -506,7 +508,7 @@ export default function ReviewsScreen({ navigation, route }) {
             const data = await getBusinessReviews(businessId);
             setReviews(data);
         } catch (error) {
-            console.log("Erro ao carregar avaliações:", error.message);
+            logger.error("Erro ao carregar avaliações:", error?.message);
         } finally {
             setLoading(false);
         }
@@ -679,7 +681,7 @@ export default function ReviewsScreen({ navigation, route }) {
                                 onPress={() => { setSortBy(key); setSortMenuOpen(false); }}
                                 className={`px-4 py-3 border-b border-neutral-100 ${sortBy === key ? "bg-[#fdf3d8]" : "bg-white"}`}
                             >
-                                <Text className={`text-sm ${sortBy === key ? "font-bold text-[#946900]" : "text-neutral-700"}`}>
+                                <Text className={`text-sm ${sortBy === key ? "font-bold text-brand-dark" : "text-neutral-700"}`}>
                                     {label}
                                 </Text>
                             </Pressable>
@@ -693,7 +695,7 @@ export default function ReviewsScreen({ navigation, route }) {
                     <Pressable>
                         <Text className="text-[10px] text-neutral-400">
                             Viu algo errado?{" "}
-                            <Text className="text-[#946900] font-bold">Denuncie</Text>
+                            <Text className="text-brand-dark font-bold">Denuncie</Text>
                         </Text>
                     </Pressable>
                 </View>
