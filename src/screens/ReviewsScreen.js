@@ -5,7 +5,6 @@ import {
     Pressable,
     ScrollView,
     Image,
-    ActivityIndicator,
     FlatList,
     Share,
     Modal,
@@ -17,6 +16,7 @@ import { ArrowLeft, Share2, Heart, Flag, SlidersHorizontal, ChevronDown, Star, U
 import { getBusinessReviews } from "../services/api";
 import { colors } from "../theme";
 import logger from "../services/logger";
+import { ReviewsSkeleton } from "../components/skeletons";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
@@ -496,8 +496,19 @@ export default function ReviewsScreen({ navigation, route }) {
 
     if (loading) {
         return (
-            <View className="flex-1 items-center justify-center bg-white">
-                <ActivityIndicator color={colors.brandDark} size="large" />
+            <View className="flex-1 bg-[#f0f0f0]">
+                <View className="flex-row items-center justify-between bg-white px-4 pt-12 pb-3 border-b border-neutral-200">
+                    <Pressable onPress={() => navigation.goBack()} className="p-1">
+                        <ArrowLeft size={24} color="#0a0a0a" strokeWidth={2.5} />
+                    </Pressable>
+                    <Text className="text-base font-bold text-neutral-900 flex-1 text-center mx-2" numberOfLines={1}>
+                        {businessName}
+                    </Text>
+                    <View style={{ width: 60 }} />
+                </View>
+                <ScrollView scrollEnabled={false} showsVerticalScrollIndicator={false}>
+                    <ReviewsSkeleton />
+                </ScrollView>
             </View>
         );
     }

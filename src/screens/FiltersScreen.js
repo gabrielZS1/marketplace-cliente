@@ -47,7 +47,7 @@ export default function FiltersScreen({ navigation, route }) {
   }
 
   return (
-    <View className="flex-1 bg-[#efefef]">
+    <View className="flex-1 bg-surface-alt">
 
       <View className="flex-row items-start justify-between px-6 pt-14 pb-4">
         <Text className="text-2xl font-bold text-neutral-950">Filtros</Text>
@@ -90,7 +90,7 @@ export default function FiltersScreen({ navigation, route }) {
         </View>
       </View>
 
-      <View className="flex-row items-center gap-4 px-6 pb-10 pt-4 border-t border-neutral-300 bg-[#efefef]">
+      <View className="flex-row items-center gap-4 px-6 pb-10 pt-4 border-t border-neutral-300 bg-surface-alt">
         <Pressable
           onPress={handleClear}
           className="flex-1 items-center justify-center rounded-xl border border-neutral-400 py-3.5 bg-white"

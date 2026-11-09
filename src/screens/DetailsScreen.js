@@ -4,7 +4,7 @@ import { ArrowLeft, Share2, Heart, ExternalLink, Copy, Car, PawPrint, Wifi, Chev
 import * as Clipboard from "expo-clipboard";
 import { getBusinessById, getBusinessEmployees, getBusinessWorkingHours } from "../services/api";
 
-import LoadingScreen from "../components/LoadingScreen";
+import { DetailsSkeleton } from "../components/skeletons";
 import logger from "../services/logger";
 
 
@@ -37,8 +37,21 @@ export default function DetailsScreen({ navigation, route }) {
     }, []);
 
     if (loading) {
-    return <LoadingScreen />;
-}
+        return (
+            <View className="flex-1 bg-white">
+                <View className="flex-row items-center justify-between px-4 pt-12 pb-3 border-b border-neutral-100">
+                    <Pressable onPress={() => navigation.goBack()} className="p-1">
+                        <ArrowLeft size={22} color="#0a0a0a" strokeWidth={2.5} />
+                    </Pressable>
+                    <Text className="text-base font-bold text-neutral-950 flex-1 text-center mx-2" numberOfLines={1}>
+                        {businessName}
+                    </Text>
+                    <View style={{ width: 52 }} />
+                </View>
+                <DetailsSkeleton />
+            </View>
+        );
+    }
 
     async function loadData() {
         setLoading(true);

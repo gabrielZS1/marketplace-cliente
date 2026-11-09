@@ -1,12 +1,12 @@
 import { Pressable, ScrollView, Text, TextInput, View, Modal, Animated, Dimensions } from "react-native";
-import { CalendarDays, MapPin, Search } from "lucide-react-native";
+import { Search } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
 import { SlidersHorizontal, ChevronDown, Info, Circle, CheckCircle } from "lucide-react-native";
 import { getBusinessesByCategory } from "../services/api";
 import { FlatList } from "react-native";
 
 import ResultCard from "../components/ResultCard";
-import LoadingScreen from "../components/LoadingScreen";
+import { ResultListSkeleton } from "../components/skeletons";
 import { colors } from "../theme";
 import logger from "../services/logger";
 
@@ -58,10 +58,9 @@ export default function SearchService({ navigation, route }) {
 
     const [search, setSearch] = useState(route.params?.query ?? "");
     const [activeCategory, setActiveCategory] = useState(initialCategory);
-    const [address, setAddress] = useState("");
-    const [date, setDate] = useState(null);
     const [sortOpen, setSortOpen] = useState(false);
     const [sortBy, setSortBy] = useState("recommended");
+    const [selectedFilters, setSelectedFilters] = useState([]);
     const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -108,17 +107,13 @@ export default function SearchService({ navigation, route }) {
         return 0; // recommended — ordem original da API
     });
 
-    if (loading) {
-    return <LoadingScreen />;
-}
-
     return (
         <>
             <FlatList
-                data={sortedResults}
+                data={loading ? [] : sortedResults}
                 keyExtractor={(item) => String(item.id)}
                 showsVerticalScrollIndicator={false}
-                className="flex-1 bg-[#dcdcdc]"
+                className="flex-1 bg-surface-alt"
                 contentContainerStyle={{ paddingBottom: 140 }}
                 ListHeaderComponent={
                     <View>
@@ -133,34 +128,12 @@ export default function SearchService({ navigation, route }) {
                                 </Text>
                             </Pressable>
 
-                            <View className="mx-6 mt-3 flex-row gap-2">
-                                <Pressable
-                                    onPress={() => navigation.navigate("LocationSearch", { onSelect: setAddress })}
-                                    className="h-10 flex-1 flex-row items-center rounded-xl bg-white/15 px-3"
-                                >
-                                    <MapPin size={15} color="#ffffff" strokeWidth={2.5} />
-                                    <Text numberOfLines={1} className="ml-1.5 text-xs text-white">
-                                        {address || "Rua João Mendes Mesquita"}
-                                    </Text>
-                                </Pressable>
-
-                                <Pressable
-                                    onPress={() => navigation.navigate("DatePicker", { onSelect: setDate })}
-                                    className="h-10 flex-1 flex-row items-center rounded-xl bg-white/15 px-3"
-                                >
-                                    <CalendarDays size={15} color="#ffffff" strokeWidth={2.5} />
-                                    <Text numberOfLines={1} className="ml-1.5 text-xs text-white">
-                                        {date || "Quando?"}
-                                    </Text>
-                                </Pressable>
-                            </View>
-
                             <FlatList
                                 data={CATEGORIES}
                                 keyExtractor={(item) => item.key}
                                 horizontal
                                 showsHorizontalScrollIndicator={false}
-                                className="mt-5"
+                                className="mt-4"
                                 contentContainerStyle={{ paddingHorizontal: 20 }}
                                 renderItem={({ item }) => {
                                     const isActive = activeCategory === item.key;
@@ -201,9 +174,9 @@ export default function SearchService({ navigation, route }) {
                                     <Pressable
                                         key={service}
                                         onPress={() => setSearch(service)}
-                                        className="rounded-full bg-[#e7e7e7] px-4 py-2.5 mr-2"
+                                        className="rounded-full bg-brand-tint px-4 py-2.5 mr-2"
                                     >
-                                        <Text className="text-sm font-semibold text-neutral-800">
+                                        <Text className="text-sm font-semibold text-brand-dark">
                                             {service}
                                         </Text>
                                     </Pressable>
@@ -215,21 +188,32 @@ export default function SearchService({ navigation, route }) {
                             <Pressable
                                 onPress={() =>
                                     navigation.navigate("Filters", {
-                                        activeFilters: [],
-                                        onApply: (filters) => console.log("Filtros:", filters),
+                                        activeFilters: selectedFilters,
+                                        onApply: setSelectedFilters,
                                     })
                                 }
-                                className="flex-row items-center rounded-full border border-neutral-400 px-3.5 py-2.5"
+                                className={`flex-row items-center rounded-full border px-3.5 py-2.5 ${
+                                    selectedFilters.length
+                                        ? "border-brand-dark bg-brand-tint"
+                                        : "border-line bg-white"
+                                }`}
                             >
-                                <SlidersHorizontal size={15} color="#404040" />
-                                <Text className="text-sm font-semibold text-neutral-700 ml-1.5">
-                                    Filtros
+                                <SlidersHorizontal
+                                    size={15}
+                                    color={selectedFilters.length ? colors.brandDark : "#404040"}
+                                />
+                                <Text
+                                    className={`text-sm font-semibold ml-1.5 ${
+                                        selectedFilters.length ? "text-brand-dark" : "text-neutral-700"
+                                    }`}
+                                >
+                                    Filtros{selectedFilters.length ? ` (${selectedFilters.length})` : ""}
                                 </Text>
                             </Pressable>
 
                             <Pressable
                                 onPress={() => setSortOpen(true)}
-                                className="flex-row items-center rounded-full border border-neutral-400 px-3.5 py-2.5"
+                                className="flex-row items-center rounded-full border border-line bg-white px-3.5 py-2.5"
                             >
                                 <Text className="text-sm font-semibold text-neutral-700">
                                     Ordenar por: {currentSortLabel}
@@ -240,7 +224,8 @@ export default function SearchService({ navigation, route }) {
 
                         <View className="px-6 mt-6 mb-4">
                             <Text className="text-xl font-bold text-neutral-950">
-                                {CATEGORY_LABELS[activeCategory] ?? "Resultados"} ({sortedResults.length})
+                                {CATEGORY_LABELS[activeCategory] ?? "Resultados"}
+                                {loading ? "" : ` (${sortedResults.length})`}
                             </Text>
                             <Pressable className="flex-row items-center mt-1">
                                 <Text className="text-xs text-neutral-500">
@@ -255,6 +240,7 @@ export default function SearchService({ navigation, route }) {
                     <View className="px-6">
                         <ResultCard
                             business={item}
+                            categoryLabel={activeCategory === "ALL" ? CATEGORY_LABELS[item.category] : null}
                             onPress={() =>
                                 navigation.navigate("BusinessDetail", { businessId: item.id })
                             }
@@ -262,7 +248,9 @@ export default function SearchService({ navigation, route }) {
                     </View>
                 )}
                 ListEmptyComponent={
-                    !loading && (
+                    loading ? (
+                        <ResultListSkeleton />
+                    ) : (
                         <View className="px-6 items-center mt-10">
                             <Text className="text-neutral-500">Nenhum resultado encontrado.</Text>
                         </View>

@@ -6,7 +6,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { listMyAppointments } from "../services/api";
 import { colors } from "../theme";
 
-import LoadingScreen from "../components/LoadingScreen";
+import { AppointmentListSkeleton } from "../components/skeletons";
 import logger from "../services/logger";
 
 
@@ -118,8 +118,13 @@ export default function AppointmentsScreen({ navigation }) {
   const finished = appointments.filter((a) => ["COMPLETED", "CANCELLED", "NO_SHOW"].includes(a.status));
 
   if (loading) {
-    return <LoadingScreen />;
-}
+    return (
+      <View className="flex-1 bg-white px-6">
+        <Text className="text-2xl font-bold text-neutral-950 mt-14 mb-6">Agendamentos</Text>
+        <AppointmentListSkeleton />
+      </View>
+    );
+  }
 
   return (
     <FlatList

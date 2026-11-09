@@ -15,7 +15,6 @@ import { ArrowLeft, Mail, Lock, Eye, EyeOff } from "lucide-react-native";
 import { showAlert } from "../services/alert";
 import { useAuth } from "../contexts/AuthContext";
 
-import LoadingScreen from "../components/LoadingScreen";
 
 
 
@@ -70,10 +69,6 @@ export default function LoginScreen({ navigation }) {
     } finally {
       setLoading(false);
     }
-  }
-
-  if (loading) {
-    return <LoadingScreen />;
   }
 
   return (

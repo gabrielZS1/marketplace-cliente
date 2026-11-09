@@ -5,14 +5,13 @@ import {
   Pressable,
   ScrollView,
   ImageBackground,
-  ActivityIndicator,
 } from "react-native";
 import { ArrowLeft } from "lucide-react-native";
 import { getBusinessGiftCards } from "../services/api";
 import { colors } from "../theme";
 import logger from "../services/logger";
 
-import LoadingScreen from "../components/LoadingScreen";
+import { GiftCardListSkeleton } from "../components/skeletons";
 
 
 const CATEGORY_IMAGES = {
@@ -107,10 +106,6 @@ export default function GiftCardScreen({ navigation, route }) {
     }
   }
 
-  if (loading) {
-    return <LoadingScreen />;
-}
-
   return (
     <View className="flex-1 bg-white">
       <View className="flex-row items-center px-4 pt-12 pb-4 border-b border-neutral-100">
@@ -130,9 +125,7 @@ export default function GiftCardScreen({ navigation, route }) {
       </Text>
 
       {loading ? (
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator color={colors.brandDark} size="large" />
-        </View>
+        <GiftCardListSkeleton />
       ) : cards.length === 0 ? (
         <View
           className="flex-1 items-center justify-center px-5"

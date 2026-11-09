@@ -26,7 +26,6 @@ import {
 import { showAlert } from "../services/alert";
 import { API_BASE_URL } from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
-import LoadingScreen from "../components/LoadingScreen";
 
 export default function RegisterScreen({ navigation }) {
   const [name, setName] = useState("");
@@ -128,10 +127,6 @@ export default function RegisterScreen({ navigation }) {
     } finally {
       setLoading(false);
     }
-  }
-
-  if (loading) {
-    return <LoadingScreen />;
   }
 
   return (
