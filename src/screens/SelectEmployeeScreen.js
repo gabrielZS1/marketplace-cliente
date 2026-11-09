@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { View, Text, Pressable, ScrollView, Image, ActivityIndicator } from "react-native";
+import { View, Text, Pressable, ScrollView, Image } from "react-native";
 import { ArrowLeft, Check, ChevronRight, Star, Users } from "lucide-react-native";
 import { getBusinessEmployees, getAvailability } from "../services/api";
 import { colors } from "../theme";
 import logger from "../services/logger";
 
-import LoadingScreen from "../components/LoadingScreen";
+import { EmployeeListSkeleton } from "../components/skeletons";
 
 function formatDateParam(date) {
   const y = date.getFullYear();
@@ -84,10 +84,6 @@ export default function SelectEmployeeScreen({ navigation, route }) {
     return <Text className="text-xs font-semibold text-neutral-400 mt-0.5">Sem disponibilidade nesta data</Text>;
   }
 
-  if (loading) {
-    return <LoadingScreen />;
-}
-
   return (
     <View className="flex-1 bg-white pt-14 px-5">
       <Pressable onPress={() => navigation.goBack()} className="mb-6">
@@ -97,7 +93,7 @@ export default function SelectEmployeeScreen({ navigation, route }) {
       <Text className="text-2xl font-bold text-neutral-950 mb-6">Selecionar membro da equipe</Text>
 
       {loading ? (
-        <ActivityIndicator color={colors.brandDark} style={{ marginTop: 24 }} />
+        <EmployeeListSkeleton />
       ) : (
         <ScrollView showsVerticalScrollIndicator={false}>
           <Pressable

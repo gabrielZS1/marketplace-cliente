@@ -1,10 +1,10 @@
 import { useEffect, useState, useMemo } from "react";
-import { View, Text, Pressable, TextInput, ScrollView, ActivityIndicator } from "react-native";
+import { View, Text, Pressable, TextInput, ScrollView } from "react-native";
 import { X, Search, ChevronDown, ChevronUp } from "lucide-react-native";
 import { getBusinessServices } from "../services/api";
 import { colors } from "../theme";
 
-import LoadingScreen from "../components/LoadingScreen";
+import { ServiceCategoriesSkeleton } from "../components/skeletons";
 import logger from "../services/logger";
 
 
@@ -63,10 +63,6 @@ export default function AddServiceScreen({ navigation, route }) {
     navigation.goBack();
   }
 
-  if (loading) {
-    return <LoadingScreen />;
-}
-
   return (
     <View className="flex-1 bg-white pt-14 px-5">
       <Pressable onPress={() => navigation.goBack()} className="mb-5">
@@ -87,7 +83,7 @@ export default function AddServiceScreen({ navigation, route }) {
       </View>
 
       {loading ? (
-        <ActivityIndicator color={colors.brandDark} style={{ marginTop: 24 }} />
+        <ServiceCategoriesSkeleton />
       ) : (
         <ScrollView showsVerticalScrollIndicator={false}>
           {Object.entries(grouped).map(([category, categoryServices]) => {

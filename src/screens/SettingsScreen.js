@@ -28,6 +28,7 @@ import { getMe, updatePushToken } from "../services/api";
 import { registerForPushNotificationsAsync } from "../../pushNotifications";
 import { showConfirm, showAlert } from "../services/alert";
 import AddressField from "../components/AddressField";
+import { SettingsSkeleton } from "../components/skeletons";
 import logger from "../services/logger";
 import { colors } from "../theme";
 
@@ -136,9 +137,7 @@ export default function SettingsScreen({ navigation }) {
       </View>
 
       {loading ? (
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator color={colors.brandDark} />
-        </View>
+        <SettingsSkeleton />
       ) : (
         <ScrollView
           className="flex-1 px-5"

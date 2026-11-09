@@ -6,11 +6,11 @@ import {
   ScrollView,
   Image,
   TextInput,
-  ActivityIndicator,
 } from "react-native";
-import { ArrowLeft, Users } from "lucide-react-native";
+import { ArrowLeft, Users, Plus } from "lucide-react-native";
 
 import Calendar from "../components/Calendar";
+import { TimeSlotsSkeleton } from "../components/skeletons";
 
 import {
   getBusinessEmployees,
@@ -21,7 +21,7 @@ import {
 import { useAuth } from "../contexts/AuthContext";
 import { showAlert } from "../services/alert";
 import logger from "../services/logger";
-import { colors } from "../theme";
+import { colors, shadow } from "../theme";
 
 function formatDateParam(date) {
   const y = date.getFullYear();
@@ -287,9 +287,100 @@ export default function BookingScreen({ navigation, route }) {
           </Text>
         </View>
 
+        {/* SERVIÇO — contexto do que está sendo agendado vem primeiro, antes de
+            qualquer escolha, para que quem abre a tela saiba de imediato o que
+            e quanto está reservando */}
+
+        <View
+          className="mx-5 mt-3 rounded-2xl bg-surface-alt px-4 py-4"
+          style={shadow.card}
+        >
+          <View className="flex-row justify-between items-start">
+            <Text className="flex-1 pr-3 text-base font-bold text-neutral-950">
+              {service.name}
+            </Text>
+
+            <Text className="text-base font-bold text-neutral-950">
+              {formatPrice(service.price)}
+            </Text>
+          </View>
+
+          <Text className="text-xs text-neutral-600 mt-0.5">
+            {service.durationMinutes}min
+            {selectedSlot &&
+              ` · ${selectedSlot.time} - ${addMinutes(selectedSlot.time, service.durationMinutes)}`}
+          </Text>
+
+          <View className="flex-row items-center justify-between mt-3">
+            <View className="flex-row items-center flex-1 pr-2">
+              <View className="w-7 h-7 rounded-full bg-white items-center justify-center mr-2">
+                <Users
+                  color={colors.brandDark}
+                  size={14}
+                />
+              </View>
+
+              <Text numberOfLines={1} className="text-sm text-neutral-800 flex-1">
+                Equipe:{" "}
+                {selectedSlot?.employeeName ??
+                  (selectedEmployee
+                    ? selectedEmployee.name
+                    : "Qualquer Funcionário")}
+              </Text>
+            </View>
+
+            <Pressable
+              onPress={() =>
+                navigation.navigate(
+                  "SelectEmployee",
+                  {
+                    businessId,
+                    serviceId: service.id,
+                    date: selectedDate.toISOString(),
+                    selectedSlotTime:
+                      selectedSlot?.time,
+                    selectedEmployeeId:
+                      selectedEmployee?.id ?? null,
+                    onSelect:
+                      setSelectedEmployee,
+                  }
+                )
+              }
+              className="bg-white rounded-lg px-3.5 py-2"
+            >
+              <Text className="text-xs font-bold text-neutral-800">
+                Alterar
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+
+        <Pressable
+          className="flex-row items-center px-5 mt-3"
+          onPress={() =>
+            navigation.navigate("AddService", {
+              businessId,
+
+              onSelect: (newService) =>
+                showAlert(
+                  "Em breve",
+                  `Suporte a múltiplos serviços no mesmo agendamento ainda está em construção. Serviço escolhido: ${newService.name}`
+                ),
+            })
+          }
+        >
+          <Plus size={15} color={colors.brandDark} strokeWidth={2.5} />
+          <Text className="text-sm font-bold text-brand-dark ml-1.5">
+            Adicionar outro serviço
+          </Text>
+        </Pressable>
+
         {/* FUNCIONÁRIOS */}
 
-        <View className="px-5 mt-4">
+        <View className="px-5 mt-6">
+          <Text className="text-sm font-bold text-neutral-500 mb-3">
+            Quem vai te atender?
+          </Text>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -380,11 +471,9 @@ export default function BookingScreen({ navigation, route }) {
           </ScrollView>
         </View>
 
-        <View className="h-[1px] bg-neutral-200 mt-4" />
-
         {/* CALENDÁRIO */}
 
-        <View className="px-5 mt-5">
+        <View className="px-5 mt-6">
           <Calendar
             availableDaysOfWeek={availableDaysOfWeek}
             selectedDate={selectedDate}
@@ -395,11 +484,7 @@ export default function BookingScreen({ navigation, route }) {
         {/* HORÁRIOS */}
 
         {loadingSlots ? (
-          <View className="items-center py-8">
-            <ActivityIndicator
-              color={colors.brandDark}
-            />
-          </View>
+          <TimeSlotsSkeleton />
         ) : !hasAvailableSlots ? (
           <View className="items-center px-5 mt-6">
             <View className="w-16 h-16 rounded-full bg-neutral-200 mb-3" />
@@ -436,7 +521,7 @@ export default function BookingScreen({ navigation, route }) {
                 return (
                   <View
                     key={slot.time}
-                    className="mr-3 px-4 py-3"
+                    className="mr-3 px-4 py-3 rounded-xl border-2 border-line bg-surface-alt"
                   >
                     <Text className="text-sm text-neutral-400">
                       {slot.time}
@@ -472,110 +557,10 @@ export default function BookingScreen({ navigation, route }) {
           </ScrollView>
         )}
 
-        {/* SERVIÇO */}
-
-        <View
-          className="mx-5 mt-5 rounded-2xl bg-neutral-200 p-8"
-          style={{
-            shadowColor: "#000",
-            shadowOffset: {
-              width: 8,
-              height: 4,
-            },
-            shadowOpacity: 0.1,
-            shadowRadius: 8,
-            elevation: 6,
-          }}
-        >
-          <View className="flex-row justify-between items-start">
-            <Text className="text-base font-semibold text-neutral-950">
-              {service.name}
-            </Text>
-
-            <Text className="text-base font-semibold text-neutral-950">
-              {formatPrice(service.price)}
-            </Text>
-          </View>
-
-          {selectedSlot && (
-            <Text className="text-xs text-neutral-600 mt-0.5">
-              {selectedSlot.time} -{" "}
-              {addMinutes(
-                selectedSlot.time,
-                service.durationMinutes
-              )}
-            </Text>
-          )}
-
-          <View className="flex-row items-center justify-between mt-4">
-            <View className="flex-row items-center">
-              <View className="w-7 h-7 rounded-full bg-white items-center justify-center mr-2">
-                <Users
-                  color={colors.brandDark}
-                  size={14}
-                />
-              </View>
-
-              <Text className="text-sm text-neutral-800">
-                Equipe:{" "}
-                {selectedSlot?.employeeName ??
-                  (selectedEmployee
-                    ? selectedEmployee.name
-                    : "Qualquer Funcionário")}
-              </Text>
-            </View>
-
-            <Pressable
-              onPress={() =>
-                navigation.navigate(
-                  "SelectEmployee",
-                  {
-                    businessId,
-                    serviceId: service.id,
-                    date: selectedDate.toISOString(),
-                    selectedSlotTime:
-                      selectedSlot?.time,
-                    selectedEmployeeId:
-                      selectedEmployee?.id ?? null,
-                    onSelect:
-                      setSelectedEmployee,
-                  }
-                )
-              }
-              className="bg-white rounded-lg px-4 py-2"
-            >
-              <Text className="text-xs font-bold text-neutral-800">
-                Alterar
-              </Text>
-            </Pressable>
-          </View>
-        </View>
-
-        {/* ADICIONAR SERVIÇO */}
-
-        <Pressable
-          className="px-5 mt-4"
-          onPress={() =>
-            navigation.navigate("AddService", {
-              businessId,
-
-              onSelect: (newService) =>
-                showAlert(
-                  "Em breve",
-                  `Suporte a múltiplos serviços no mesmo agendamento ainda está em construção. Serviço escolhido: ${newService.name}`
-                ),
-            })
-          }
-        >
-          <Text className="text-sm font-bold text-brand-dark">
-            + Adicionar outro serviço
-          </Text>
-        </Pressable>
-
         {/* OBSERVAÇÃO */}
 
         <View className="px-5 mt-6">
-          <Text className="text-px6 font-bold text-neutral-800 mb-2">
+          <Text className="text-sm font-bold text-neutral-500 mb-2">
             Alguma observação ou pedido para sua visita?
           </Text>
 
@@ -585,7 +570,7 @@ export default function BookingScreen({ navigation, route }) {
             placeholder="Observação do agendamento"
             placeholderTextColor="#737373"
             multiline
-            className="bg-neutral-100 rounded-xl px-4 py-3 text-px-6 text-neutral-800"
+            className="bg-surface-alt rounded-xl px-4 py-3 text-sm text-neutral-800"
             style={{
               minHeight: 90,
               textAlignVertical: "top",
@@ -627,7 +612,7 @@ export default function BookingScreen({ navigation, route }) {
           </Pressable>
         </View>
 
-        <Text className="text-[13px] font-bold text-neutral-800 mt-2">
+        <Text className="text-[11px] text-neutral-400 mt-2">
           Seus dados pessoais serão processados pelo parceiro com o qual você
           está realizando o agendamento.
         </Text>

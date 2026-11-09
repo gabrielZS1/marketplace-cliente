@@ -5,7 +5,6 @@ import { useAuth } from "../contexts/AuthContext";
 import { createReview } from "../services/api";
 import { showAlert } from "../services/alert";
 import { useImagePicker } from "../hooks/useImagePicker";
-import LoadingScreen from "../components/LoadingScreen";
 import { colors } from "../theme";
 
 export default function CreateReviewScreen({ navigation, route }) {
@@ -41,9 +40,6 @@ export default function CreateReviewScreen({ navigation, route }) {
     }
   }
 
-  if (loading) {
-    return <LoadingScreen />;
-  }
 
   return (
     <View className="flex-1 bg-white">
@@ -115,9 +111,12 @@ export default function CreateReviewScreen({ navigation, route }) {
 
         <Pressable
           onPress={handleSubmit}
-          className="bg-brand rounded-2xl h-14 items-center justify-center mt-8 mb-10"
+          disabled={loading}
+          className={`${loading ? "bg-neutral-300" : "bg-brand"} rounded-2xl h-14 items-center justify-center mt-8 mb-10`}
         >
-          <Text className="text-on-brand text-base font-bold">Enviar avaliação</Text>
+          <Text className={`${loading ? "text-neutral-500" : "text-on-brand"} text-base font-bold`}>
+            {loading ? "Enviando..." : "Enviar avaliação"}
+          </Text>
         </Pressable>
       </ScrollView>
     </View>

@@ -6,14 +6,13 @@ import {
   ScrollView,
   Pressable,
   TextInput,
-  ActivityIndicator,
 } from "react-native";
 import { ArrowLeft, Star, Search, Info } from "lucide-react-native";
 import { getBusinessById, getBusinessServices } from "../services/api";
 import { showAlert } from "../services/alert";
 import { colors } from "../theme";
 
-import LoadingScreen from "../components/LoadingScreen";
+import { BusinessDetailSkeleton } from "../components/skeletons";
 import logger from "../services/logger";
 
 const TABS = [
@@ -132,8 +131,16 @@ export default function BusinessDetailScreen({ navigation, route }) {
 
   if (loading || !business) {
     return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator color={colors.brandDark} size="large" />
+      <View className="flex-1 bg-white">
+        <ScrollView showsVerticalScrollIndicator={false} scrollEnabled={false}>
+          <BusinessDetailSkeleton />
+        </ScrollView>
+        <Pressable
+          onPress={() => navigation.goBack()}
+          className="absolute top-14 left-5 bg-white/90 rounded-full w-10 h-10 items-center justify-center"
+        >
+          <ArrowLeft color="#0a0a0a" size={20} />
+        </Pressable>
       </View>
     );
   }
@@ -147,10 +154,6 @@ export default function BusinessDetailScreen({ navigation, route }) {
     .filter(
       (s) => !search || s.name.toLowerCase().includes(search.toLowerCase()),
     );
-
-    if (loading) {
-    return <LoadingScreen />;
-}
 
   return (
     <ScrollView

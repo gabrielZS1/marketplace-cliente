@@ -1,4 +1,6 @@
 import "./global.css";
+import { useEffect, useState } from "react";
+import { StatusBar } from "expo-status-bar";
 import { useFonts, Poppins_400Regular, Poppins_500Medium, Poppins_600SemiBold, Poppins_700Bold } from '@expo-google-fonts/poppins';
 import { NavigationContainer, getFocusedRouteNameFromRoute } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -31,6 +33,7 @@ import GiftCardsScreen from './src/screens/GiftCardsScreen';
 import DetailsScreen from './src/screens/DetailsScreen';
 import GiftCardDetailsScreen from "./src/screens/GiftCardDetailsScreen";
 import LoadingScreen from "./src/components/LoadingScreen";
+import IntroSplash from "./src/components/IntroSplash";
 import BookingPendingScreen from './src/screens/BookingPendingScreen';
 import BottomTabBar from './src/components/BottomTabBar';
 import CreateReviewScreen from './src/screens/CreateReviewScreen';
@@ -96,7 +99,21 @@ function MainTabs() {
       }}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Explorar" component={ExploreNavigator} />
+      <Tab.Screen
+        name="Explorar"
+        component={ExploreNavigator}
+        listeners={({ navigation }) => ({
+          // A aba "Explorar" é independente: ao tocar nela direto na barra
+          // inferior, sempre volta para a lista sem filtro — sem isso, ela
+          // ficava presa na última categoria escolhida a partir da Home.
+          tabPress: () => {
+            navigation.navigate("Explorar", {
+              screen: "SearchServices",
+              params: { category: "ALL" },
+            });
+          },
+        })}
+      />
       <Tab.Screen name="Agendamentos" component={AppointmentsScreen} />
       <Tab.Screen name="Perfil" component={ProfileScreen} />
     </Tab.Navigator>
@@ -143,6 +160,15 @@ function Routes() {
   );
 }
 
+// Avisa a abertura animada quando a sessão já foi restaurada.
+function BootSignal({ onReady }) {
+  const { loading } = useAuth();
+  useEffect(() => {
+    if (!loading) onReady();
+  }, [loading]);
+  return null;
+}
+
 export default function App() {
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
@@ -150,16 +176,31 @@ export default function App() {
     Poppins_600SemiBold,
     Poppins_700Bold,
   });
-
-  if (!fontsLoaded) return <LoadingScreen />;
+  const [authReady, setAuthReady] = useState(false);
+  const [showIntro, setShowIntro] = useState(true);
 
   return (
-    <AlertProvider>
-      <AuthProvider>
-        <NavigationContainer>
-          <Routes />
-        </NavigationContainer>
-      </AuthProvider>
-    </AlertProvider>
+    <View style={{ flex: 1, backgroundColor: "#ffffff" }}>
+      <StatusBar style={showIntro ? "light" : "dark"} />
+
+      {fontsLoaded ? (
+        <AlertProvider>
+          <AuthProvider>
+            <BootSignal onReady={() => setAuthReady(true)} />
+            <NavigationContainer>
+              <Routes />
+            </NavigationContainer>
+          </AuthProvider>
+        </AlertProvider>
+      ) : null}
+
+      {/* Abertura animada por cima de tudo enquanto o app inicializa */}
+      {showIntro ? (
+        <IntroSplash
+          ready={fontsLoaded && authReady}
+          onFinish={() => setShowIntro(false)}
+        />
+      ) : null}
+    </View>
   );
 }
