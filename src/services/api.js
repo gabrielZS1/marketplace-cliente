@@ -108,7 +108,30 @@ async function request(path, options = {}, token = null, isRetry = false) {
     return null;
   }
 
-  return response.json();
+  return rewriteMediaUrls(await response.json());
+}
+
+// O backend monta as URLs de foto (/uploads/...) com o host que está no APP_BASE_URL
+// dele, que pode não ser o host real da API (ex.: "glowly-backend.onrender.com" em vez
+// do serviço de verdade). Aqui toda URL /uploads que vier nas respostas é reescrita
+// para a mesma origem da API — assim as fotos abrem mesmo com o host gravado errado.
+const UPLOADS_URL_RE = /^https?:\/\/[^/\s]+(\/uploads\/\S*)$/i;
+
+export function mediaUrl(url) {
+  if (typeof url !== "string") return url;
+  const match = UPLOADS_URL_RE.exec(url);
+  return match ? `${API_URL}${match[1]}` : url;
+}
+
+function rewriteMediaUrls(value) {
+  if (typeof value === "string") return mediaUrl(value);
+  if (Array.isArray(value)) return value.map(rewriteMediaUrls);
+  if (value && typeof value === "object") {
+    const out = {};
+    for (const key of Object.keys(value)) out[key] = rewriteMediaUrls(value[key]);
+    return out;
+  }
+  return value;
 }
 
 function refreshTokenRequest(refreshToken) {
@@ -212,6 +235,14 @@ export function updateUserAddress(token, address) {
 
 export function listMyAppointments(token) {
   return request("/api/appointments/me", {}, token);
+}
+
+export function cancelAppointment(appointmentId, token) {
+  return request(
+    `/api/appointments/${appointmentId}/cancel`,
+    { method: "PATCH" },
+    token,
+  );
 }
 
 export async function createAppointment(data, token) {
