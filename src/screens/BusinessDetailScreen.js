@@ -11,6 +11,7 @@ import { ArrowLeft, Star, Search, Info } from "lucide-react-native";
 import { getBusinessById, getBusinessServices } from "../services/api";
 import { showAlert } from "../services/alert";
 import { colors } from "../theme";
+import SocialLinks from "../components/SocialLinks";
 
 import { BusinessDetailSkeleton } from "../components/skeletons";
 import logger from "../services/logger";
@@ -210,6 +211,8 @@ export default function BusinessDetailScreen({ navigation, route }) {
           })}
         </View>
       )}
+
+      <SocialLinks business={business} className="px-5 mt-3" />
 
       <View className="px-5 mt-4">
         {business.featured && (
