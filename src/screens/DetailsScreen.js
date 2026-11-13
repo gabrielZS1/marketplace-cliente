@@ -5,6 +5,8 @@ import * as Clipboard from "expo-clipboard";
 import { getBusinessById, getBusinessEmployees, getBusinessWorkingHours } from "../services/api";
 
 import { DetailsSkeleton } from "../components/skeletons";
+import SocialLinks from "../components/SocialLinks";
+import { getSocialLinks } from "../utils/social";
 import logger from "../services/logger";
 
 
@@ -80,10 +82,6 @@ export default function DetailsScreen({ navigation, route }) {
         if (!business?.latitude || !business?.longitude) return;
         const url = `https://www.google.com/maps/search/?api=1&query=${business.latitude},${business.longitude}`;
         Linking.openURL(url);
-    }
-
-    function openSocial(url) {
-        if (url) Linking.openURL(url);
     }
 
     const sortedHours = [...workingHours].sort(
@@ -196,31 +194,12 @@ export default function DetailsScreen({ navigation, route }) {
                         </View>
                     )}
 
-                    {(business.tiktokUrl || business.instagramUrl) && (
+                    {getSocialLinks(business).length > 0 && (
                         <View className="mb-6">
                             <Text className="text-sm font-bold text-neutral-950 mb-3">
                                 MÍDIAS SOCIAIS E COMPARTILHAMENTOS
                             </Text>
-                            <View className="flex-row gap-4">
-                                {business.tiktokUrl && (
-                                    <Pressable
-                                        onPress={() => openSocial(business.tiktokUrl)}
-                                        className="items-center justify-center bg-neutral-900 rounded-2xl"
-                                        style={{ width: 56, height: 56 }}
-                                    >
-                                        <Text className="text-white text-[10px] font-bold">TikTok</Text>
-                                    </Pressable>
-                                )}
-                                {business.instagramUrl && (
-                                    <Pressable
-                                        onPress={() => openSocial(business.instagramUrl)}
-                                        className="items-center justify-center bg-neutral-100 rounded-2xl"
-                                        style={{ width: 56, height: 56 }}
-                                    >
-                                        <Text className="text-neutral-900 text-[10px] font-bold">Instagram</Text>
-                                    </Pressable>
-                                )}
-                            </View>
+                            <SocialLinks business={business} />
                         </View>
                     )}
 
