@@ -237,6 +237,40 @@ export function listMyAppointments(token) {
   return request("/api/appointments/me", {}, token);
 }
 
+// Exclui a conta (LGPD). O backend anonimiza os dados e encerra o acesso.
+export function deleteAccountRequest(token, password) {
+  return request(
+    "/api/auth/delete-account",
+    { method: "POST", body: JSON.stringify({ password }) },
+    token,
+  );
+}
+
+// Denúncia de conteúdo. targetType: "REVIEW" | "BUSINESS".
+// reason: "SPAM" | "OFFENSIVE" | "FAKE" | "INAPPROPRIATE" | "OTHER".
+export function reportContent(token, { targetType, targetId, reason, details }) {
+  return request(
+    "/api/reports",
+    {
+      method: "POST",
+      body: JSON.stringify({ targetType, targetId, reason, details: details || null }),
+    },
+    token,
+  );
+}
+
+export function blockUser(token, userId) {
+  return request(`/api/users/me/blocks/${userId}`, { method: "POST" }, token);
+}
+
+export function unblockUser(token, userId) {
+  return request(`/api/users/me/blocks/${userId}`, { method: "DELETE" }, token);
+}
+
+export function listBlockedUsers(token) {
+  return request("/api/users/me/blocks", {}, token);
+}
+
 export function cancelAppointment(appointmentId, token) {
   return request(
     `/api/appointments/${appointmentId}/cancel`,
@@ -341,19 +375,6 @@ export function getBusinessReviews(businessId, token = null) {
 
 export function getBusinessGiftCards(businessId, token = null) {
   return request(`/api/businesses/${businessId}/gift-cards`, {}, token);
-}
-
-export function reportBusiness(token, businessId, reason) {
-  return request(
-    `/api/businesses/${businessId}/report`,
-    {
-      method: "POST",
-      body: JSON.stringify({
-        reason,
-      }),
-    },
-    token,
-  );
 }
 
 export async function uploadBusinessLogo(businessId, imageUri, token) {

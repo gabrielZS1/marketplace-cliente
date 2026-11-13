@@ -13,7 +13,10 @@ import {
     Dimensions,
 } from "react-native";
 import { ArrowLeft, Share2, Heart, Flag, SlidersHorizontal, ChevronDown, Star, UserCircle, X, Check, MoreHorizontal } from "lucide-react-native";
-import { getBusinessReviews } from "../services/api";
+import { getBusinessReviews, reportContent, blockUser } from "../services/api";
+import { useAuth } from "../contexts/AuthContext";
+import { showAlert, showConfirm, showSuccess } from "../services/alert";
+import ReportSheet from "../components/ReportSheet";
 import { colors } from "../theme";
 import logger from "../services/logger";
 import { ReviewsSkeleton } from "../components/skeletons";
@@ -75,7 +78,7 @@ function formatDate(dateStr) {
     });
 }
 
-function ReviewCard({ review }) {
+function ReviewCard({ review, onMenu }) {
     const initials = review.clientName
         ? review.clientName.split(" ").map((n) => n[0]).slice(0, 1).join("").toUpperCase()
         : "?";
@@ -110,8 +113,14 @@ function ReviewCard({ review }) {
                     </View>
                 </View>
 
-                {/* Denunciar */}
-                <Pressable className="p-1">
+                {/* Denunciar / bloquear */}
+                <Pressable
+                    onPress={() => onMenu(review)}
+                    className="p-1"
+                    hitSlop={10}
+                    accessibilityRole="button"
+                    accessibilityLabel="Denunciar ou bloquear"
+                >
                     <Flag size={15} color="#a3a3a3" strokeWidth={2} />
                 </Pressable>
             </View>
@@ -167,7 +176,7 @@ function ActionSheet({ visible, onClose, onShare, onReport }) {
                             <Text style={{ fontSize: 16, color: "#111" }}>Compartilhar</Text>
                         </Pressable>
                         <Pressable onPress={onReport} style={{ paddingVertical: 16, alignItems: "center" }}>
-                            <Text style={{ fontSize: 16, color: "#e53935", fontWeight: "600" }}>Denunciar</Text>
+                            <Text style={{ fontSize: 16, color: "#e53935", fontWeight: "600" }}>Denunciar ou bloquear</Text>
                         </Pressable>
                     </View>
                 </View>
@@ -176,7 +185,7 @@ function ActionSheet({ visible, onClose, onShare, onReport }) {
     );
 }
 
-function PhotoViewerModal({ visible, photos, initialIndex, onClose }) {
+function PhotoViewerModal({ visible, photos, initialIndex, onClose, onMenu }) {
     const [index, setIndex] = useState(initialIndex);
     const [actionSheetOpen, setActionSheetOpen] = useState(false);
 
@@ -206,6 +215,8 @@ function PhotoViewerModal({ visible, photos, initialIndex, onClose }) {
 
     function handleReport() {
         setActionSheetOpen(false);
+        // Quem decide (denunciar ou bloquear) é a tela principal, depois de fechar o visualizador.
+        onMenu?.(current);
     }
 
     return (
@@ -299,6 +310,40 @@ function PhotoViewerModal({ visible, photos, initialIndex, onClose }) {
                     onReport={handleReport}
                 />
             </View>
+        </Modal>
+    );
+}
+
+// Menu de uma avaliação: denunciar o conteúdo ou bloquear quem escreveu.
+function ReviewMenu({ review, onClose, onReport, onBlock }) {
+    return (
+        <Modal visible={!!review} transparent animationType="fade" onRequestClose={onClose} statusBarTranslucent>
+            <Pressable
+                style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" }}
+                onPress={onClose}
+            >
+                <View style={{ padding: 12, paddingBottom: 24 }}>
+                    <View style={{ backgroundColor: "#fff", borderRadius: 14, overflow: "hidden" }}>
+                        <Pressable
+                            onPress={() => onReport(review)}
+                            style={{ paddingVertical: 16, alignItems: "center", borderBottomWidth: 1, borderBottomColor: "#e5e5e5" }}
+                        >
+                            <Text style={{ fontSize: 16, color: "#e53935", fontWeight: "600" }}>Denunciar avaliação</Text>
+                        </Pressable>
+                        <Pressable onPress={() => onBlock(review)} style={{ paddingVertical: 16, alignItems: "center" }}>
+                            <Text style={{ fontSize: 16, color: "#111", fontWeight: "600" }}>
+                                Bloquear {review?.clientName ?? "usuário"}
+                            </Text>
+                        </Pressable>
+                    </View>
+                    <Pressable
+                        onPress={onClose}
+                        style={{ marginTop: 8, backgroundColor: "#fff", borderRadius: 14, paddingVertical: 16, alignItems: "center" }}
+                    >
+                        <Text style={{ fontSize: 16, color: "#111" }}>Cancelar</Text>
+                    </Pressable>
+                </View>
+            </Pressable>
         </Modal>
     );
 }
@@ -468,8 +513,12 @@ function FiltersModal({ visible, onClose, starCounts, employees, draftStars, set
 
 export default function ReviewsScreen({ navigation, route }) {
     const { businessId, businessName } = route.params;
+    const { token } = useAuth();
 
     const [reviews, setReviews] = useState([]);
+    const [menuReview, setMenuReview] = useState(null);
+    const [reportTarget, setReportTarget] = useState(null);
+    const [reporting, setReporting] = useState(false);
     const [loading, setLoading] = useState(true);
     const [sortBy, setSortBy] = useState("recent");
     const [sortMenuOpen, setSortMenuOpen] = useState(false);
@@ -516,7 +565,8 @@ export default function ReviewsScreen({ navigation, route }) {
     async function loadReviews() {
         setLoading(true);
         try {
-            const data = await getBusinessReviews(businessId);
+            // Com o token, o servidor já esconde as avaliações de quem foi bloqueado.
+            const data = await getBusinessReviews(businessId, token);
             setReviews(data);
         } catch (error) {
             logger.error("Erro ao carregar avaliações:", error?.message);
@@ -579,6 +629,56 @@ export default function ReviewsScreen({ navigation, route }) {
         try {
             await Share.share({ message: `Confira as avaliações de ${businessName} no Glowly!` });
         } catch (_) {}
+    }
+
+    // Abre o menu de uma avaliação (fecha antes o visualizador de fotos, se estiver aberto).
+    function openReviewMenu(review) {
+        if (!review) return;
+        setViewerVisible(false);
+        setMenuReview(review);
+    }
+
+    function startReportReview(review) {
+        setMenuReview(null);
+        setReportTarget({ targetType: "REVIEW", targetId: review.id, title: "Denunciar avaliação" });
+    }
+
+    function startBlock(review) {
+        setMenuReview(null);
+        if (!review?.clientId) return;
+        showConfirm(
+            "Bloquear usuário",
+            `Você não verá mais as avaliações de ${review.clientName ?? "esta pessoa"}. Dá para desbloquear em Configurações.`,
+            async () => {
+                try {
+                    await blockUser(token, review.clientId);
+                    setReviews((prev) => prev.filter((r) => r.clientId !== review.clientId));
+                    showSuccess("Usuário bloqueado", "As avaliações dessa pessoa foram ocultadas.");
+                } catch (error) {
+                    showAlert("Não foi possível bloquear", error?.message || "Tente novamente.");
+                }
+            },
+            "Bloquear",
+        );
+    }
+
+    async function submitReport(reason) {
+        if (!reportTarget || reporting) return;
+        setReporting(true);
+        try {
+            await reportContent(token, {
+                targetType: reportTarget.targetType,
+                targetId: reportTarget.targetId,
+                reason,
+            });
+            setReportTarget(null);
+            showSuccess("Denúncia enviada", "Obrigado! Nossa equipe vai analisar em até 24 horas.");
+        } catch (error) {
+            setReportTarget(null);
+            showAlert("Não foi possível denunciar", error?.message || "Tente novamente.");
+        } finally {
+            setReporting(false);
+        }
     }
 
     
@@ -703,7 +803,11 @@ export default function ReviewsScreen({ navigation, route }) {
                 {/* ── Lista de avaliações ── */}
                 <View className="flex-row items-center justify-between px-5 mt-5 mb-3">
                     <Text className="text-base font-bold text-neutral-950">Avaliações</Text>
-                    <Pressable>
+                    <Pressable
+                        onPress={() =>
+                            setReportTarget({ targetType: "BUSINESS", targetId: businessId, title: "Denunciar estabelecimento" })
+                        }
+                    >
                         <Text className="text-[10px] text-neutral-400">
                             Viu algo errado?{" "}
                             <Text className="text-brand-dark font-bold">Denuncie</Text>
@@ -719,7 +823,7 @@ export default function ReviewsScreen({ navigation, route }) {
                     </View>
                 ) : (
                     sortedReviews.map((review) => (
-                        <ReviewCard key={review.id} review={review} />
+                        <ReviewCard key={review.id} review={review} onMenu={openReviewMenu} />
                     ))
                 )}
             </ScrollView>
@@ -744,6 +848,22 @@ export default function ReviewsScreen({ navigation, route }) {
                 photos={clientPhotos}
                 initialIndex={viewerIndex}
                 onClose={() => setViewerVisible(false)}
+                onMenu={openReviewMenu}
+            />
+
+            {/* ── Denunciar / bloquear ── */}
+            <ReviewMenu
+                review={menuReview}
+                onClose={() => setMenuReview(null)}
+                onReport={startReportReview}
+                onBlock={startBlock}
+            />
+            <ReportSheet
+                visible={!!reportTarget}
+                title={reportTarget?.title}
+                busy={reporting}
+                onClose={() => setReportTarget(null)}
+                onSelect={submitReport}
             />
         </View>
     );

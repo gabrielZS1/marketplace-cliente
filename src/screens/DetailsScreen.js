@@ -2,7 +2,10 @@ import { useEffect, useState } from "react";
 import { View, Text, Pressable, ScrollView, Image, Linking, ActivityIndicator } from "react-native";
 import { ArrowLeft, Share2, Heart, ExternalLink, Copy, Car, PawPrint, Wifi, ChevronRight } from "lucide-react-native";
 import * as Clipboard from "expo-clipboard";
-import { getBusinessById, getBusinessEmployees, getBusinessWorkingHours } from "../services/api";
+import { getBusinessById, getBusinessEmployees, getBusinessWorkingHours, reportContent } from "../services/api";
+import { useAuth } from "../contexts/AuthContext";
+import { showAlert, showSuccess } from "../services/alert";
+import ReportSheet from "../components/ReportSheet";
 
 import { DetailsSkeleton } from "../components/skeletons";
 import SocialLinks from "../components/SocialLinks";
@@ -33,10 +36,28 @@ export default function DetailsScreen({ navigation, route }) {
     const [employees, setEmployees] = useState([]);
     const [workingHours, setWorkingHours] = useState([]);
     const [loading, setLoading] = useState(true);
+    const { token } = useAuth();
+    const [reportOpen, setReportOpen] = useState(false);
+    const [reporting, setReporting] = useState(false);
 
     useEffect(() => {
         loadData();
     }, []);
+
+    async function submitReport(reason) {
+        if (reporting) return;
+        setReporting(true);
+        try {
+            await reportContent(token, { targetType: "BUSINESS", targetId: businessId, reason });
+            setReportOpen(false);
+            showSuccess("Denúncia enviada", "Obrigado! Nossa equipe vai analisar em até 24 horas.");
+        } catch (error) {
+            setReportOpen(false);
+            showAlert("Não foi possível denunciar", error?.message || "Tente novamente.");
+        } finally {
+            setReporting(false);
+        }
+    }
 
     if (loading) {
         return (
@@ -235,12 +256,23 @@ export default function DetailsScreen({ navigation, route }) {
                         </View>
                     )}
 
-                    <Pressable className="flex-row items-center justify-between py-4 border-t border-neutral-100">
+                    <Pressable
+                        onPress={() => setReportOpen(true)}
+                        className="flex-row items-center justify-between py-4 border-t border-neutral-100"
+                    >
                         <Text className="text-sm text-neutral-700">Denunciar</Text>
                         <ChevronRight size={18} color="#a3a3a3" />
                     </Pressable>
                 </View>
             </ScrollView>
+
+            <ReportSheet
+                visible={reportOpen}
+                title="Denunciar estabelecimento"
+                busy={reporting}
+                onClose={() => setReportOpen(false)}
+                onSelect={submitReport}
+            />
         </View>
     );
 }
