@@ -154,7 +154,15 @@ export default function DetailsScreen({ navigation, route }) {
                             <View className="flex-row flex-wrap gap-5">
                                 {employees.map((emp) => (
                                     <View key={emp.id} className="items-center" style={{ width: 70 }}>
-                                        <View className="w-14 h-14 rounded-full bg-neutral-300 mb-1.5" />
+                                        {emp.photoUrl ? (
+                                            <Image
+                                                source={{ uri: emp.photoUrl }}
+                                                className="w-14 h-14 rounded-full bg-neutral-300 mb-1.5"
+                                                resizeMode="cover"
+                                            />
+                                        ) : (
+                                            <View className="w-14 h-14 rounded-full bg-neutral-300 mb-1.5" />
+                                        )}
                                         <Text className="text-xs text-neutral-700 text-center" numberOfLines={1}>
                                             {emp.name}
                                         </Text>
