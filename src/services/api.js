@@ -108,7 +108,30 @@ async function request(path, options = {}, token = null, isRetry = false) {
     return null;
   }
 
-  return response.json();
+  return rewriteMediaUrls(await response.json());
+}
+
+// O backend monta as URLs de foto (/uploads/...) com o host que está no APP_BASE_URL
+// dele, que pode não ser o host real da API (ex.: "glowly-backend.onrender.com" em vez
+// do serviço de verdade). Aqui toda URL /uploads que vier nas respostas é reescrita
+// para a mesma origem da API — assim as fotos abrem mesmo com o host gravado errado.
+const UPLOADS_URL_RE = /^https?:\/\/[^/\s]+(\/uploads\/\S*)$/i;
+
+export function mediaUrl(url) {
+  if (typeof url !== "string") return url;
+  const match = UPLOADS_URL_RE.exec(url);
+  return match ? `${API_URL}${match[1]}` : url;
+}
+
+function rewriteMediaUrls(value) {
+  if (typeof value === "string") return mediaUrl(value);
+  if (Array.isArray(value)) return value.map(rewriteMediaUrls);
+  if (value && typeof value === "object") {
+    const out = {};
+    for (const key of Object.keys(value)) out[key] = rewriteMediaUrls(value[key]);
+    return out;
+  }
+  return value;
 }
 
 function refreshTokenRequest(refreshToken) {
@@ -214,6 +237,48 @@ export function listMyAppointments(token) {
   return request("/api/appointments/me", {}, token);
 }
 
+// Exclui a conta (LGPD). O backend anonimiza os dados e encerra o acesso.
+export function deleteAccountRequest(token, password) {
+  return request(
+    "/api/auth/delete-account",
+    { method: "POST", body: JSON.stringify({ password }) },
+    token,
+  );
+}
+
+// Denúncia de conteúdo. targetType: "REVIEW" | "BUSINESS".
+// reason: "SPAM" | "OFFENSIVE" | "FAKE" | "INAPPROPRIATE" | "OTHER".
+export function reportContent(token, { targetType, targetId, reason, details }) {
+  return request(
+    "/api/reports",
+    {
+      method: "POST",
+      body: JSON.stringify({ targetType, targetId, reason, details: details || null }),
+    },
+    token,
+  );
+}
+
+export function blockUser(token, userId) {
+  return request(`/api/users/me/blocks/${userId}`, { method: "POST" }, token);
+}
+
+export function unblockUser(token, userId) {
+  return request(`/api/users/me/blocks/${userId}`, { method: "DELETE" }, token);
+}
+
+export function listBlockedUsers(token) {
+  return request("/api/users/me/blocks", {}, token);
+}
+
+export function cancelAppointment(appointmentId, token) {
+  return request(
+    `/api/appointments/${appointmentId}/cancel`,
+    { method: "PATCH" },
+    token,
+  );
+}
+
 export async function createAppointment(data, token) {
   return request(
     "/api/appointments",
@@ -310,19 +375,6 @@ export function getBusinessReviews(businessId, token = null) {
 
 export function getBusinessGiftCards(businessId, token = null) {
   return request(`/api/businesses/${businessId}/gift-cards`, {}, token);
-}
-
-export function reportBusiness(token, businessId, reason) {
-  return request(
-    `/api/businesses/${businessId}/report`,
-    {
-      method: "POST",
-      body: JSON.stringify({
-        reason,
-      }),
-    },
-    token,
-  );
 }
 
 export async function uploadBusinessLogo(businessId, imageUri, token) {

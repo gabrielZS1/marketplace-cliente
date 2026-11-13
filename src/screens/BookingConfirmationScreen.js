@@ -56,6 +56,10 @@ export default function BookingConfirmationScreen({ route, navigation }) {
   const servicePriceFormatted = formatCurrency(service?.price);
 
   async function handleConfirmBooking() {
+    // Toque duplo não pode criar duas reservas (com "qualquer profissional" a
+    // segunda cairia em outro profissional no mesmo horário).
+    if (loading) return;
+
     const trimmedNotes = notes?.trim();
 
     const payload = {

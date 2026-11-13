@@ -24,7 +24,7 @@ function formatPrice(value) {
   return `R$ ${Number(value).toFixed(2).replace(".", ",")}`;
 }
 
-function GiftCardItem({ card, businessName, businessAddress, navigation }) {
+function GiftCardItem({ card, businessId, businessName, businessAddress, navigation }) {
   const image = CATEGORY_IMAGES[card.category] ?? CATEGORY_IMAGES.SILVER;
 
   return (
@@ -34,6 +34,7 @@ function GiftCardItem({ card, businessName, businessAddress, navigation }) {
       onPress={() =>
         navigation.navigate("GiftCardsDetail", {
           card,
+          businessId,
           businessName,
           businessAddress,
         })
@@ -144,6 +145,7 @@ export default function GiftCardScreen({ navigation, route }) {
             <GiftCardItem
               key={card.id}
               card={card}
+              businessId={businessId}
               businessName={businessName}
               businessAddress={businessAddress}
               navigation={navigation}

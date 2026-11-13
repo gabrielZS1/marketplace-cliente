@@ -20,6 +20,7 @@ import SearchInputScreen from './src/screens/SearchInputScreen';
 import BusinessDetailScreen from './src/screens/BusinessDetailScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
+import DeleteAccountScreen from './src/screens/DeleteAccountScreen';
 import AppointmentsScreen from './src/screens/AppointmentsScreen';
 import BookingScreen from './src/screens/BookingScreen';
 import SelectEmployeeScreen from './src/screens/SelectEmployeeScreen';
@@ -147,6 +148,7 @@ function Routes() {
           <Stack.Screen name="BookingPending" component={BookingPendingScreen} />
           <Stack.Screen name="CreateReview" component={CreateReviewScreen} />
           <Stack.Screen name="Settings" component={SettingsScreen} />
+          <Stack.Screen name="DeleteAccount" component={DeleteAccountScreen} />
         </>
       ) : (
         <>

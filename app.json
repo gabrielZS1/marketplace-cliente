@@ -12,14 +12,14 @@
       "backgroundColor": "#0A0A0A"
     },
     "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.gabrielzs1.client",
+      "supportsTablet": false,
+      "bundleIdentifier": "app.glowly.cliente",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
-      "package": "com.gabrielzs1.client",
+      "package": "app.glowly.cliente",
       "adaptiveIcon": {
         "foregroundImage": "./assets/iconapp.png",
         "backgroundColor": "#ffffff"
@@ -38,7 +38,10 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "Permita o acesso à localização para encontrar estabelecimentos perto de você."
+          "locationWhenInUsePermission": "Permita o acesso à localização para encontrar estabelecimentos perto de você.",
+          "locationAlwaysAndWhenInUsePermission": "Permita o acesso à localização para encontrar estabelecimentos perto de você.",
+          "isIosBackgroundLocationEnabled": false,
+          "isAndroidBackgroundLocationEnabled": false
         }
       ],
       "expo-font",

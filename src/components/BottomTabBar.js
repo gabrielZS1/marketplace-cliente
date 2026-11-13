@@ -26,18 +26,16 @@ export default function BottomTabBar({ state, navigation }) {
               onPress={() => navigation.navigate(route.name)}
               className="flex-1 items-center"
               activeOpacity={0.7}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: isFocused }}
+              accessibilityLabel={route.name}
             >
-              <View
-                className={`items-center justify-center rounded-2xl px-4 py-1.5 ${
-                  isFocused ? "bg-brand-tint" : ""
-                }`}
-              >
-                <Icon
-                  color={isFocused ? colors.brandDark : colors.inkFaint}
-                  size={22}
-                  strokeWidth={isFocused ? 2.6 : 2}
-                />
-              </View>
+              {/* Só o ícone: a cor e a espessura do traço mostram qual aba está ativa. */}
+              <Icon
+                color={isFocused ? colors.brandDark : colors.inkFaint}
+                size={24}
+                strokeWidth={isFocused ? 2.4 : 1.8}
+              />
 
               <Text
                 className={`mt-1 text-[11px] ${

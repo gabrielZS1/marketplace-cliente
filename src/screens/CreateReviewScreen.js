@@ -3,7 +3,7 @@ import { View, Text, TextInput, Pressable, Image, ScrollView } from "react-nativ
 import { ArrowLeft, Star, Camera, X } from "lucide-react-native";
 import { useAuth } from "../contexts/AuthContext";
 import { createReview } from "../services/api";
-import { showAlert } from "../services/alert";
+import { showAlert, showSuccess } from "../services/alert";
 import { useImagePicker } from "../hooks/useImagePicker";
 import { colors } from "../theme";
 
@@ -32,7 +32,7 @@ export default function CreateReviewScreen({ navigation, route }) {
 
     try {
       await createReview(token, appointmentId, rating, comment, photoUri);
-      showAlert("Sucesso", "Avaliação enviada!", () => navigation.goBack());
+      showSuccess("Obrigado!", "Sua avaliação foi enviada.", () => navigation.goBack());
     } catch (error) {
       showAlert("Erro", error.message);
     } finally {

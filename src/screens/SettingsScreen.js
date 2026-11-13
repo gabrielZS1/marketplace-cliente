@@ -18,13 +18,23 @@ import {
   MapPin,
   Info,
   LogOut,
+  Trash2,
+  ShieldOff,
+  FileText,
+  ShieldCheck,
 } from "lucide-react-native";
 import Constants from "expo-constants";
 import * as Notifications from "expo-notifications";
 import * as Location from "expo-location";
 
 import { useAuth } from "../contexts/AuthContext";
-import { getMe, updatePushToken } from "../services/api";
+import {
+  getMe,
+  updatePushToken,
+  listBlockedUsers,
+  unblockUser,
+  API_BASE_URL,
+} from "../services/api";
 import { registerForPushNotificationsAsync } from "../../pushNotifications";
 import { showConfirm, showAlert } from "../services/alert";
 import AddressField from "../components/AddressField";
@@ -67,15 +77,18 @@ export default function SettingsScreen({ navigation }) {
   const [notifEnabled, setNotifEnabled] = useState(false);
   const [notifBusy, setNotifBusy] = useState(false);
   const [locationGranted, setLocationGranted] = useState(false);
+  const [blockedUsers, setBlockedUsers] = useState([]);
 
   const loadStatuses = useCallback(async () => {
     try {
-      const [me, notifPerm, locPerm] = await Promise.all([
+      const [me, notifPerm, locPerm, blocked] = await Promise.all([
         getMe(token).catch(() => null),
         Notifications.getPermissionsAsync(),
         Location.getForegroundPermissionsAsync(),
+        listBlockedUsers(token).catch(() => []),
       ]);
       if (me) setProfile(me);
+      setBlockedUsers(Array.isArray(blocked) ? blocked : []);
       setNotifEnabled(notifPerm.status === "granted");
       setLocationGranted(locPerm.status === "granted");
     } catch (error) {
@@ -116,6 +129,15 @@ export default function SettingsScreen({ navigation }) {
       showAlert("Erro", error.message);
     } finally {
       setNotifBusy(false);
+    }
+  }
+
+  async function handleUnblock(blockedUser) {
+    try {
+      await unblockUser(token, blockedUser.userId);
+      setBlockedUsers((prev) => prev.filter((b) => b.userId !== blockedUser.userId));
+    } catch (error) {
+      showAlert("Não foi possível desbloquear", error?.message || "Tente novamente.");
     }
   }
 
@@ -194,8 +216,39 @@ export default function SettingsScreen({ navigation }) {
             />
           </View>
 
+          {blockedUsers.length > 0 && (
+            <>
+              <SectionTitle>USUÁRIOS BLOQUEADOS</SectionTitle>
+              <View className="rounded-2xl bg-surface-alt overflow-hidden">
+                {blockedUsers.map((b) => (
+                  <Row
+                    key={b.userId}
+                    icon={ShieldOff}
+                    label={b.name}
+                    value="Você não vê as avaliações desta pessoa"
+                    right={
+                      <Pressable onPress={() => handleUnblock(b)} hitSlop={8}>
+                        <Text className="text-xs font-semibold text-brand-dark">Desbloquear</Text>
+                      </Pressable>
+                    }
+                  />
+                ))}
+              </View>
+            </>
+          )}
+
           <SectionTitle>SOBRE</SectionTitle>
           <View className="rounded-2xl bg-surface-alt overflow-hidden">
+            <Row
+              icon={FileText}
+              label="Termos de uso"
+              onPress={() => Linking.openURL(`${API_BASE_URL}/legal/termos`)}
+            />
+            <Row
+              icon={ShieldCheck}
+              label="Política de privacidade"
+              onPress={() => Linking.openURL(`${API_BASE_URL}/legal/privacidade`)}
+            />
             <Row icon={Info} label="Versão do app" value={version} />
           </View>
 
@@ -208,6 +261,16 @@ export default function SettingsScreen({ navigation }) {
             <LogOut color={colors.danger} size={20} />
             <Text className="ml-3 text-sm font-semibold text-red-600">
               Sair da conta
+            </Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() => navigation.navigate("DeleteAccount")}
+            className="flex-row items-center py-3"
+          >
+            <Trash2 color={colors.danger} size={20} />
+            <Text className="ml-3 text-sm font-semibold text-red-600">
+              Excluir conta
             </Text>
           </Pressable>
         </ScrollView>

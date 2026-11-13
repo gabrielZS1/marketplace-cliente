@@ -3,7 +3,7 @@ import { View, Text, TextInput, Pressable } from "react-native";
 import { ArrowLeft, Search, MapPin } from "lucide-react-native";
 import { getRecentSearches, addRecentSearch } from "../services/recentSearches";
 
-const POPULAR_SERVICES = ["Corte de Cabelo", "Manicure", "Dia de SPA", "Pedicure"];
+const POPULAR_SERVICES = ["Corte de Cabelo", "Manicure", "SPA", "Pedicure"];
 
 export default function SearchInputScreen({ navigation }) {
   const [address, setAddress] = useState("");

@@ -14,7 +14,7 @@ const CATEGORIES = [
     { key: "BARBERSHOP", label: "Barbeiros" },
     { key: "HAIRDRESSER", label: "Cabeleireiro" },
     { key: "WELLNESS", label: "Saúde e\nbem-estar" },
-    { key: "SPA", label: "Dia de\nSPA" },
+    { key: "SPA", label: "SPA" },
     { key: "SKINCARE", label: "Cuidados\ncom a pele" },
     { key: "MANICURE", label: "Manicure" },
     { key: "EYEBROWS_LASHES", label: "Sobrancelhas\ne cílios" },
@@ -23,7 +23,7 @@ const CATEGORIES = [
 ];
 
 const POPULAR_SERVICES = [
-    "Corte de Cabelo", "Manicure", "Dia de SPA", "Sobrancelha",
+    "Corte de Cabelo", "Manicure", "SPA", "Sobrancelha",
     "Permanente", "Alisamento / Relaxante", "Maquiagem", "Depilação",
     "Massagem", "Limpeza de Pele", "Hidratação Capilar", "Coloração",
     "Pintura de Cabelo", "Escova / Penteado",

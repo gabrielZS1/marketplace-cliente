@@ -52,6 +52,7 @@ export default function BookingScreen({ navigation, route }) {
   const { token } = useAuth();
 
   const scrollRef = useRef(null);
+  const slotsRequestRef = useRef(0);
 
   const [employees, setEmployees] = useState([]);
   const [workingHours, setWorkingHours] = useState([]);
@@ -120,6 +121,10 @@ export default function BookingScreen({ navigation, route }) {
       return;
     }
 
+    // Só a resposta da última consulta vale: ao trocar de dia/profissional
+    // rapidamente, uma resposta antiga não pode sobrescrever a nova.
+    const requestId = ++slotsRequestRef.current;
+
     setLoadingSlots(true);
 
     try {
@@ -133,13 +138,17 @@ export default function BookingScreen({ navigation, route }) {
         token
       );
 
+      if (requestId !== slotsRequestRef.current) return;
       setSlots(data || []);
     } catch (error) {
+      if (requestId !== slotsRequestRef.current) return;
       logger.error("Erro ao buscar disponibilidade:", error?.message);
 
       setSlots([]);
     } finally {
-      setLoadingSlots(false);
+      if (requestId === slotsRequestRef.current) {
+        setLoadingSlots(false);
+      }
     }
   }
 

@@ -24,7 +24,7 @@ export function showSuccess(title, message, onPress) {
   }
 }
 
-export function showConfirm(title, message, onConfirm) {
+export function showConfirm(title, message, onConfirm, confirmText = "Sair", cancelText = "Cancelar") {
   const show = getAlertHandler();
   if (show) {
     show({
@@ -32,8 +32,8 @@ export function showConfirm(title, message, onConfirm) {
       title,
       message,
       buttons: [
-        { text: "Cancelar", style: "cancel" },
-        { text: "Sair", style: "destructive", onPress: onConfirm },
+        { text: cancelText, style: "cancel" },
+        { text: confirmText, style: "destructive", onPress: onConfirm },
       ],
     });
   }

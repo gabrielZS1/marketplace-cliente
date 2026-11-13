@@ -10,6 +10,10 @@ import {
   Easing,
 } from "react-native";
 import { ArrowLeft } from "lucide-react-native";
+import { Linking, ActivityIndicator } from "react-native";
+import { getBusinessById } from "../services/api";
+import { showAlert } from "../services/alert";
+import { whatsappLink } from "../utils/social";
 
 const CATEGORY_IMAGES = {
   DIAMOND: require("../assets/gift-cards/gift-card-diamond.jpg"),
@@ -29,14 +33,44 @@ function formatPrice(value) {
 export default function GiftCardDetailsScreen({ navigation, route }) {
   const [showSummary, setShowSummary] = useState(false);
 
-  const { card, businessName, businessAddress } = route.params;
+  const { card, businessId, businessName, businessAddress } = route.params;
+  const [contacting, setContacting] = useState(false);
   const image = CATEGORY_IMAGES[card.category] ?? CATEGORY_IMAGES.SILVER;
   const benefits = card.benefits ?? [];
   const validityLabel = card.validityLabel ?? "—";
 
-  function handleConcluirPedido() {
-    setShowSummary(false);
-    navigation.navigate("GiftCardCheckout", { card, businessName });
+  // O pagamento do cartão-presente é combinado direto com o estabelecimento (fora do app).
+  // Aqui abrimos a conversa pelo WhatsApp — ou ligamos — já com o pedido escrito.
+  async function handleConcluirPedido() {
+    if (contacting) return;
+    setContacting(true);
+    try {
+      const business = businessId ? await getBusinessById(businessId) : null;
+
+      const message =
+        `Olá! Vi o cartão-presente "${card.title}" (${formatPrice(card.price)}) ` +
+        `de vocês no Glowly e gostaria de comprar.`;
+
+      const wa = whatsappLink(business?.whatsappUrl) || whatsappLink(business?.phone);
+      const phoneDigits = String(business?.phone || "").replace(/\D/g, "");
+
+      if (wa) {
+        await Linking.openURL(`${wa}?text=${encodeURIComponent(message)}`);
+      } else if (phoneDigits.length >= 10) {
+        await Linking.openURL(`tel:${phoneDigits}`);
+      } else {
+        showAlert(
+          "Contato indisponível",
+          "Este estabelecimento ainda não informou um contato. Tente pelo endereço ou pelas redes sociais dele."
+        );
+        return;
+      }
+      setShowSummary(false);
+    } catch {
+      showAlert("Não foi possível abrir o contato", "Verifique se o WhatsApp está instalado e tente de novo.");
+    } finally {
+      setContacting(false);
+    }
   }
 
   return (
@@ -143,7 +177,7 @@ export default function GiftCardDetailsScreen({ navigation, route }) {
             onPress={() => setShowSummary(true)}
             className="h-14 bg-brand rounded-2xl items-center justify-center"
           >
-            <Text className="font-bold text-on-brand text-base">Continuar</Text>
+            <Text className="font-bold text-on-brand text-base">Comprar este cartão</Text>
           </Pressable>
         </View>
       </ScrollView>
@@ -155,12 +189,13 @@ export default function GiftCardDetailsScreen({ navigation, route }) {
         card={card}
         businessName={businessName}
         onConcluir={handleConcluirPedido}
+        contacting={contacting}
       />
     </View>
   );
 }
 
-function SummaryModal({ visible, onClose, image, card, businessName, onConcluir }) {
+function SummaryModal({ visible, onClose, image, card, businessName, onConcluir, contacting }) {
   const [renderModal, setRenderModal] = useState(visible);
   const translateY = useRef(new Animated.Value(400)).current;
   const backdropOpacity = useRef(new Animated.Value(0)).current;
@@ -271,7 +306,7 @@ function SummaryModal({ visible, onClose, image, card, businessName, onConcluir 
               </View>
             </View>
             <Text className="text-xs text-neutral-500 mt-2 leading-5">
-              Entre em contato diretamente com o comerciante para concluir o pagamento deste cartão presente.
+              O pagamento e a entrega do cartão presente são combinados diretamente com o estabelecimento. Toque abaixo para falar com ele.
             </Text>
           </View>
 
@@ -282,9 +317,14 @@ function SummaryModal({ visible, onClose, image, card, businessName, onConcluir 
             </View>
             <Pressable
               onPress={onConcluir}
+              disabled={contacting}
               className="bg-brand h-14 rounded-2xl items-center justify-center"
             >
-              <Text className="font-bold text-on-brand text-base">Concluir pedido</Text>
+              {contacting ? (
+                <ActivityIndicator color="#1A1206" />
+              ) : (
+                <Text className="font-bold text-on-brand text-base">Falar com o estabelecimento</Text>
+              )}
             </Pressable>
           </View>
         </Animated.View>

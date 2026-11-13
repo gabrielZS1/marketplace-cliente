@@ -6,6 +6,7 @@ import {
   login as loginApi,
   register as registerApi,
   logoutRequest,
+  deleteAccountRequest,
   registerAuthHandlers,
   updatePushToken,
 } from "../services/api";
@@ -146,6 +147,15 @@ export function AuthProvider({ children }) {
     updateLocalUser({ address });
   }
 
+  // Exclui a conta no servidor e limpa a sessão deste aparelho.
+  async function deleteAccount(password) {
+    await deleteAccountRequest(token, password);
+    await clearStoredAuth();
+    setToken(null);
+    setRefreshToken(null);
+    setUser(null);
+  }
+
   async function signOut() {
     if (refreshToken) {
       try {
@@ -169,6 +179,7 @@ export function AuthProvider({ children }) {
         signIn,
         signUp,
         signOut,
+        deleteAccount,
         updateLocalAddress,
         updateLocalUser,
       }}
