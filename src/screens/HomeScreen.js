@@ -9,21 +9,7 @@ import {
 } from "react-native";
 import * as Location from "expo-location";
 import { LinearGradient } from "expo-linear-gradient";
-import {
-  ArrowRight,
-  ChevronRight,
-  Search,
-  Tag,
-  Scissors,
-  Hand,
-  Sparkles,
-  Eye,
-  Droplet,
-  HeartPulse,
-  Flower2,
-  Palette,
-  LayoutGrid,
-} from "lucide-react-native";
+import { ArrowRight, ChevronRight, Search, Tag } from "lucide-react-native";
 import { FlatList } from "react-native";
 import { BusinessCardRowSkeleton, NextAppointmentSkeleton } from "../components/skeletons";
 import { colors, brandGradient, shadow } from "../theme";
@@ -32,18 +18,29 @@ import { UPCOMING_STATUSES, withEffectiveStatus } from "../utils/appointmentStat
 
 import { getAllBusinesses, getNearbyBusinesses, listMyAppointments } from "../services/api";
 
-// Ícones simples (só o traço, sem círculo/foto) — mesmos do app do estabelecimento.
 const CATEGORIES = [
-  { key: "BARBERSHOP", label: "Barbeiros", Icon: Scissors },
-  { key: "HAIRDRESSER", label: "Cabeleireiro", Icon: Sparkles },
-  { key: "WELLNESS", label: "Saúde e\nbem-estar", Icon: HeartPulse },
-  { key: "SPA", label: "SPA", Icon: Flower2 },
-  { key: "SKINCARE", label: "Cuidados\ncom a pele", Icon: Droplet },
-  { key: "MANICURE", label: "Manicure", Icon: Hand },
-  { key: "EYEBROWS_LASHES", label: "Sobrancelhas\ne cílios", Icon: Eye },
-  { key: "MAKEUP", label: "Maquiagem", Icon: Palette },
-  { key: "OTHER", label: "Outros", Icon: LayoutGrid },
+  { key: "BARBERSHOP", label: "Barbeiros" },
+  { key: "HAIRDRESSER", label: "Cabeleireiro" },
+  { key: "WELLNESS", label: "Saúde e\nbem-estar" },
+  { key: "SPA", label: "SPA" },
+  { key: "SKINCARE", label: "Cuidados\ncom a pele" },
+  { key: "MANICURE", label: "Manicure" },
+  { key: "EYEBROWS_LASHES", label: "Sobrancelhas\ne cílios" },
+  { key: "MAKEUP", label: "Maquiagem" },
+  { key: "OTHER", label: "Outros" },
 ];
+
+const CATEGORY_IMAGES = {
+  BARBERSHOP: require("../assets/categories/barbershop.jpg"),
+  HAIRDRESSER: require("../assets/categories/hairdresser.jpg"),
+  WELLNESS: require("../assets/categories/wellness.jpg"),
+  SPA: require("../assets/categories/spa.jpg"),
+  SKINCARE: require("../assets/categories/skincare.jpg"),
+  MANICURE: require("../assets/categories/manicure.jpg"),
+  EYEBROWS_LASHES: require("../assets/categories/eyebrows_lashes.jpg"),
+  MAKEUP: require("../assets/categories/makeup.jpg"),
+  OTHER: require("../assets/categories/other.jpg"),
+};
 
 
 function BusinessImage({ business, className }) {
@@ -349,15 +346,30 @@ export default function HomeScreen({ navigation }) {
           showsHorizontalScrollIndicator={false}
           className="mt-5"
           contentContainerStyle={{ paddingLeft: 8, paddingRight: 8 }}
+          // Começa com um leve deslocamento em vez de alinhado à esquerda: a
+          // primeira bolinha fica parcialmente cortada de propósito, deixando
+          // óbvio que a lista continua para os dois lados, não só para a direita.
+          contentOffset={{ x: 28, y: 0 }}
           renderItem={({ item }) => (
             <Pressable
               onPress={() => goToSearchWithCategory(item.key)}
-              className="mr-3 w-[78px] items-center"
+              className="mr-3 w-[73px] items-center"
               accessibilityRole="button"
               accessibilityLabel={item.label.replace("\n", " ")}
             >
-              <item.Icon size={30} color="#FFFFFF" strokeWidth={1.7} />
-              <Text className="mt-2 text-center text-[10px] font-bold leading-3 text-white">
+              <View
+                className="h-16 w-16 items-center justify-center rounded-full bg-[#eeeeee]"
+                style={{ borderWidth: 1.5, borderColor: colors.brand, padding: 2 }}
+              >
+                <View className="h-full w-full items-center justify-center overflow-hidden rounded-full bg-white">
+                  <Image
+                    source={CATEGORY_IMAGES[item.key]}
+                    style={{ width: 64, height: 88 }}
+                    resizeMode="contain"
+                  />
+                </View>
+              </View>
+              <Text className="mt-1 text-center text-[10px] font-bold leading-3 text-white">
                 {item.label}
               </Text>
             </Pressable>
