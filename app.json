@@ -7,6 +7,12 @@
     "icon": "./assets/iconnot.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/6146f678-589f-4b70-b46e-7911397f3505"
+    },
     "splash": {
       "resizeMode": "contain",
       "backgroundColor": "#0A0A0A"
@@ -57,7 +63,8 @@
           "photosPermission": "Permita o acesso às suas fotos para escolher uma imagem da galeria."
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "@sentry/react-native"
     ],
     "extra": {
       "eas": {

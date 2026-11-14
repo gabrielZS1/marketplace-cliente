@@ -40,6 +40,18 @@ import BottomTabBar from './src/components/BottomTabBar';
 import CreateReviewScreen from './src/screens/CreateReviewScreen';
 
 import { View } from 'react-native';
+import { navigationRef } from "./src/navigation/navigationRef";
+import { useNotificationNavigation } from "./src/hooks/useNotificationNavigation";
+import { initMonitoring } from "./src/services/monitoring";
+
+// Relatório de falhas: liga só em produção com EXPO_PUBLIC_SENTRY_DSN definido.
+initMonitoring();
+
+// Toque numa notificação de agendamento confirmado/recusado abre "Agendamentos".
+function NotificationNavigation() {
+  useNotificationNavigation();
+  return null;
+}
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -127,6 +139,8 @@ function Routes() {
     return <LoadingScreen />;
   }
   return (
+    <>
+    {token ? <NotificationNavigation /> : null}
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {token ? (
         <>
@@ -159,6 +173,7 @@ function Routes() {
         </>
       )}
     </Stack.Navigator>
+    </>
   );
 }
 
@@ -189,7 +204,7 @@ export default function App() {
         <AlertProvider>
           <AuthProvider>
             <BootSignal onReady={() => setAuthReady(true)} />
-            <NavigationContainer>
+            <NavigationContainer ref={navigationRef}>
               <Routes />
             </NavigationContainer>
           </AuthProvider>
