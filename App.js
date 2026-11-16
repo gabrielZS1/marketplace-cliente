@@ -40,6 +40,7 @@ import BottomTabBar from './src/components/BottomTabBar';
 import CreateReviewScreen from './src/screens/CreateReviewScreen';
 
 import { View } from 'react-native';
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { navigationRef } from "./src/navigation/navigationRef";
 import { useNotificationNavigation } from "./src/hooks/useNotificationNavigation";
 import { initMonitoring } from "./src/services/monitoring";
@@ -197,6 +198,7 @@ export default function App() {
   const [showIntro, setShowIntro] = useState(true);
 
   return (
+    <SafeAreaProvider>
     <View style={{ flex: 1, backgroundColor: "#ffffff" }}>
       <StatusBar style={showIntro ? "light" : "dark"} />
 
@@ -219,5 +221,6 @@ export default function App() {
         />
       ) : null}
     </View>
+    </SafeAreaProvider>
   );
 }
