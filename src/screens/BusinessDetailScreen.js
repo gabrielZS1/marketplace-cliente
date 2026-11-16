@@ -146,9 +146,13 @@ export default function BusinessDetailScreen({ navigation, route }) {
     );
   }
 
-  const mainPhoto = business.photos?.[0];
-  const thumbnails = business.photos?.slice(1, 5) ?? [];
-  const extraCount = (business.photos?.length ?? 0) - 5;
+  // A foto grande é a mesma do perfil (a que aparece nos cards da Home e da
+  // busca). Sem foto de perfil, cai para a primeira foto da galeria.
+  const gallery = business.photos ?? [];
+  const mainPhoto = business.logoUrl || gallery[0];
+  const rest = business.logoUrl ? gallery : gallery.slice(1);
+  const thumbnails = rest.slice(0, 4);
+  const extraCount = rest.length - thumbnails.length;
 
   const filteredServices = services
     .filter((s) => (servicesFilter === "popular" ? s.popular : !s.popular))
@@ -212,8 +216,6 @@ export default function BusinessDetailScreen({ navigation, route }) {
         </View>
       )}
 
-      <SocialLinks business={business} className="px-5 mt-3" />
-
       <View className="px-5 mt-4">
         {business.featured && (
           <View className="flex-row items-center mb-2">
@@ -256,6 +258,7 @@ export default function BusinessDetailScreen({ navigation, route }) {
         </Text>
 
         <View className="flex-row items-center mt-1.5">
+          <View className="flex-1 flex-row items-center">
           {business.featured && (
             <Pressable
               onPress={() =>
@@ -271,6 +274,10 @@ export default function BusinessDetailScreen({ navigation, route }) {
             </Pressable>
           )}
           <Text className="text-xs text-neutral-400">Empreendedor</Text>
+          </View>
+
+          {/* Redes sociais discretas, no canto direito da linha. */}
+          <SocialLinks business={business} subtle />
         </View>
       </View>
 

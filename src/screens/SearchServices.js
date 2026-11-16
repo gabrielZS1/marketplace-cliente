@@ -7,7 +7,8 @@ import { FlatList } from "react-native";
 
 import ResultCard from "../components/ResultCard";
 import { ResultListSkeleton } from "../components/skeletons";
-import { colors } from "../theme";
+import { LinearGradient } from "expo-linear-gradient";
+import { colors, brandGradient } from "../theme";
 import logger from "../services/logger";
 
 const CATEGORIES = [
@@ -117,7 +118,8 @@ export default function SearchService({ navigation, route }) {
                 contentContainerStyle={{ paddingBottom: 140 }}
                 ListHeaderComponent={
                     <View>
-                        <View className="bg-brand-dark pb-4 pt-16">
+                        {/* Mesmo degradê dourado do topo da Home. */}
+                        <LinearGradient colors={brandGradient} className="overflow-hidden pb-4 pt-16">
                             <Pressable
                                 onPress={() => navigation.navigate("SearchInput")}
                                 className="mx-6 flex-row items-center rounded-xl bg-white px-4 py-3.5"
@@ -159,7 +161,7 @@ export default function SearchService({ navigation, route }) {
                                     );
                                 }}
                             />
-                        </View>
+                        </LinearGradient>
 
                         <View className="px-6 pt-6">
                             <Text className="text-lg font-bold text-neutral-950 mb-3">

@@ -18,10 +18,14 @@ function InstagramGlyph({ size = ICON, color }) {
 
 // Só o ícone (sem círculo de fundo), na cor de cada rede.
 const ICONS = {
-  whatsapp: { color: "#25D366", render: (c) => <MessageCircle size={ICON} color={c} strokeWidth={1.8} /> },
-  instagram: { color: "#E1306C", render: (c) => <InstagramGlyph color={c} /> },
-  tiktok: { color: "#111111", render: (c) => <Music2 size={ICON} color={c} strokeWidth={1.8} /> },
+  whatsapp: { color: "#25D366", render: (c, s) => <MessageCircle size={s} color={c} strokeWidth={1.8} /> },
+  instagram: { color: "#E1306C", render: (c, s) => <InstagramGlyph size={s} color={c} /> },
+  tiktok: { color: "#111111", render: (c, s) => <Music2 size={s} color={c} strokeWidth={1.8} /> },
 };
+
+// Versão discreta: pequena e cinza, para ficar no canto sem chamar atenção.
+const SUBTLE_SIZE = 17;
+const SUBTLE_COLOR = "#A3A3A3";
 
 async function open(url) {
   try {
@@ -33,21 +37,24 @@ async function open(url) {
 
 // Ícones de WhatsApp / Instagram / TikTok. Mostra só os que o estabelecimento
 // preencheu e não renderiza nada se não houver nenhum.
-export default function SocialLinks({ business, className = "" }) {
+// `subtle`: ícones pequenos e cinza (tela principal do estabelecimento).
+export default function SocialLinks({ business, className = "", subtle = false }) {
   const links = getSocialLinks(business);
   if (links.length === 0) return null;
 
+  const size = subtle ? SUBTLE_SIZE : ICON;
+
   return (
-    <View className={`flex-row items-center ${className}`} style={{ gap: 20 }}>
+    <View className={`flex-row items-center ${className}`} style={{ gap: subtle ? 14 : 20 }}>
       {links.map((s) => (
         <Pressable
           key={s.key}
           onPress={() => open(s.url)}
           accessibilityRole="link"
           accessibilityLabel={`Abrir ${s.label}`}
-          hitSlop={10}
+          hitSlop={subtle ? 12 : 10}
         >
-          {ICONS[s.key].render(ICONS[s.key].color)}
+          {ICONS[s.key].render(subtle ? SUBTLE_COLOR : ICONS[s.key].color, size)}
         </Pressable>
       ))}
     </View>
