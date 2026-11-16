@@ -158,7 +158,9 @@ export default function BookingConfirmationScreen({ route, navigation }) {
           </View>
         </View>
 
-        <View className="flex-1 min-h-[120px]" />
+        {/* Empurra o botão para o pé da tela em celulares altos; em telas
+            pequenas encolhe, para o botão "Confirmar" não sair da tela. */}
+        <View className="flex-1 min-h-[24px]" />
 
         <View className="rounded-2xl bg-brand-tint p-6 mb-4">
           <Text className="text-sm font-bold text-neutral-950">

@@ -8,7 +8,6 @@ import {
   Platform,
   ScrollView,
   Image,
-  SafeAreaView,
   TouchableOpacity,
   Linking,
 } from "react-native";
@@ -26,8 +25,10 @@ import {
 import { showAlert } from "../services/alert";
 import { API_BASE_URL } from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
+import useScreenScale from "../hooks/useScreenScale";
 
 export default function RegisterScreen({ navigation }) {
+  const { s, insets } = useScreenScale();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -134,23 +135,27 @@ export default function RegisterScreen({ navigation }) {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       className="flex-1 bg-white"
     >
-      <SafeAreaView className="flex-1">
+      <View className="flex-1">
         <ScrollView
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 16 }}
         >
           <Image
             source={require("../assets/register/register.png")}
             style={{
-              marginTop: 70,
+              marginTop: Math.max(insets.top + 8, s(70)),
               width: "100%",
-              height: 250,
+              height: s(250, 120),
             }}
             resizeMode="contain"
           />
 
           <View className="px-8">
-            <Text className="text-[38px] font-bold text-neutral-900 mb-8">
+            <Text
+              className="font-bold text-neutral-900"
+              style={{ fontSize: s(38, 30), marginBottom: s(32, 16) }}
+            >
               Cadastre-se
             </Text>
 
@@ -288,8 +293,9 @@ export default function RegisterScreen({ navigation }) {
               disabled={loading || !acceptedTerms}
               style={({ pressed }) => ({
                 opacity: pressed ? 0.85 : 1,
+                marginTop: s(40, 24),
               })}
-              className={`h-14 rounded-2xl justify-center items-center mt-10 ${
+              className={`h-14 rounded-2xl justify-center items-center ${
                 loading || !acceptedTerms ? "bg-neutral-300" : "bg-brand"
               }`}
             >
@@ -304,7 +310,8 @@ export default function RegisterScreen({ navigation }) {
 
             <Pressable
               disabled={loading}
-              className="items-center mt-10 mb-10"
+              className="items-center"
+              style={{ marginTop: s(40, 20), marginBottom: s(40, 16) }}
               onPress={() => navigation.goBack()}
             >
               <Text className="text-neutral-500 text-base">
@@ -314,7 +321,7 @@ export default function RegisterScreen({ navigation }) {
             </Pressable>
           </View>
         </ScrollView>
-      </SafeAreaView>
+      </View>
     </KeyboardAvoidingView>
   );
 }

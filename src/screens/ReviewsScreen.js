@@ -259,9 +259,9 @@ function PhotoViewerModal({ visible, photos, initialIndex, onClose, onMenu }) {
                     <View className="flex-row items-center">
                         <View
                             className="w-10 h-10 rounded-full items-center justify-center mr-3"
-                            style={{ backgroundColor: colors.brandDark }}
+                            style={{ backgroundColor: colors.brand }}
                         >
-                            <Text className="text-white font-bold text-sm">{initials}</Text>
+                            <Text className="text-on-brand font-bold text-sm">{initials}</Text>
                         </View>
                         <View className="flex-1">
                             <Text className="text-white font-bold text-sm">

@@ -142,7 +142,15 @@ export default function DetailsScreen({ navigation, route }) {
                         <Image source={{ uri: mapUrl }} style={{ width: "100%", height: 160 }} resizeMode="cover" />
 
                         <View className="absolute -bottom-10 left-4 right-4 bg-white rounded-2xl p-4 flex-row items-center shadow-sm border border-neutral-100">
-                            <View className="w-9 h-9 rounded-full bg-neutral-900 mr-3" />
+                            {business.logoUrl ? (
+                                <Image
+                                    source={{ uri: business.logoUrl }}
+                                    className="w-9 h-9 rounded-full bg-neutral-200 mr-3"
+                                    resizeMode="cover"
+                                />
+                            ) : (
+                                <View className="w-9 h-9 rounded-full bg-neutral-900 mr-3" />
+                            )}
                             <View className="flex-1">
                                 <Text className="text-sm font-bold text-neutral-950" numberOfLines={1}>
                                     {business.name}

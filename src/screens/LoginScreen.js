@@ -7,13 +7,13 @@ import {
   KeyboardAvoidingView,
   Platform,
   Image,
-  SafeAreaView,
   ScrollView,
-  TouchableOpacity 
+  TouchableOpacity
 } from "react-native";
-import { ArrowLeft, Mail, Lock, Eye, EyeOff } from "lucide-react-native";
+import { Mail, Lock, Eye, EyeOff } from "lucide-react-native";
 import { showAlert } from "../services/alert";
 import { useAuth } from "../contexts/AuthContext";
+import useScreenScale from "../hooks/useScreenScale";
 
 
 
@@ -25,6 +25,7 @@ export default function LoginScreen({ navigation }) {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const { signIn } = useAuth();
+  const { s, insets } = useScreenScale();
   const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 
   async function handleLogin() {
@@ -76,26 +77,25 @@ export default function LoginScreen({ navigation }) {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       className="flex-1 bg-white"
     >
-      <SafeAreaView className="flex-1">
+      <View className="flex-1">
         <ScrollView
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 16 }}
         >
-          
-
           <Image
             source={require("../assets/login/login.png")}
             style={{
-              marginTop: 100,
+              marginTop: Math.max(insets.top + 8, s(100)),
               width: "100%",
-              height: 250,
+              height: s(250, 140),
             }}
             resizeMode="contain"
           />
 
           <View className="px-8">
-            <Text className="text-[38px] font-bold text-neutral-900 mb-8"
-            style={{ fontFamily: "Poppins_700Bold" }}
+            <Text className="font-bold text-neutral-900"
+            style={{ fontFamily: "Poppins_700Bold", fontSize: s(38, 30), marginBottom: s(32, 16) }}
             >
               Login
             </Text>
@@ -135,7 +135,10 @@ export default function LoginScreen({ navigation }) {
             </View>
 
 
-            <View className="flex-row items-center border-b border-neutral-300 pb-3 mt-7">
+            <View
+              className="flex-row items-center border-b border-neutral-300 pb-3"
+              style={{ marginTop: s(28, 20) }}
+            >
               <Lock size={20} color="#9ca3af" />
 
               <TextInput
@@ -177,8 +180,9 @@ export default function LoginScreen({ navigation }) {
               disabled={loading}
               style={({ pressed }) => ({
                 opacity: pressed ? 0.85 : 1,
+                marginTop: s(40, 24),
               })}
-              className={`rounded-2xl h-14 justify-center items-center mt-10 ${
+              className={`rounded-2xl h-14 justify-center items-center ${
                 loading ? "bg-neutral-300" : "bg-brand"
               }`}
             >
@@ -187,36 +191,13 @@ export default function LoginScreen({ navigation }) {
               </Text>
             </Pressable>
 
-
-            <View className="flex-row items-center my-3">
-              <View className="flex-1 h-px bg-neutral-200" />
-
-              <Text className="mx-4 text-neutral-400 font-medium">OU</Text>
-
-              <View className="flex-1 h-px bg-neutral-200" />
-            </View>
-
-
-            <Pressable className="h-14 rounded-2xl bg-neutral-100 flex-row items-center justify-center">
-              <Image
-                source={require("../assets/login/google.png")}
-                style={{
-                  width: 22,
-                  height: 22,
-                  marginRight: 12,
-                }}
-                resizeMode="contain"
-              />
-
-              <Text className="ml-3 text-neutral-600 font-semibold text-base">
-                Login com Google
-              </Text>
-            </Pressable>
-
+            {/* O botão "Login com Google" ficava aqui, mas não fazia nada ao tocar.
+                Volta quando o login com Google do app do cliente for implementado. */}
 
             <Pressable
               disabled={loading}
-              className="items-center mt-10"
+              className="items-center"
+              style={{ marginTop: s(40, 20) }}
               onPress={() => navigation.navigate("Register")}
             >
               <Text className="text-neutral-500">
@@ -226,7 +207,7 @@ export default function LoginScreen({ navigation }) {
             </Pressable>
           </View>
         </ScrollView>
-      </SafeAreaView>
+      </View>
     </KeyboardAvoidingView>
   );
 }

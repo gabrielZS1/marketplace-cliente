@@ -4,7 +4,7 @@
     "slug": "Glowly",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/iconnot.png",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "runtimeVersion": {
@@ -27,8 +27,8 @@
     "android": {
       "package": "app.glowly.cliente",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/iconapp.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#161616"
       },
       "edgeToEdgeEnabled": true,
       "googleServicesFile": "./google-services.json",
@@ -54,6 +54,7 @@
       [
         "expo-notifications",
         {
+          "icon": "./assets/notification-icon.png",
           "color": "#ffffff"
         }
       ],
