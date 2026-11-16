@@ -2,11 +2,13 @@ import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
+import logger from './src/services/logger';
 
 // controla como notificações aparecem quando o app está aberto (foreground)
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
   }),
@@ -15,7 +17,7 @@ Notifications.setNotificationHandler({
 export async function registerForPushNotificationsAsync() {
   // notificação push só funciona em dispositivo físico, nunca em emulador
   if (!Device.isDevice) {
-    console.warn('Push notifications só funcionam em dispositivo físico');
+    logger.warn('Push notifications só funcionam em dispositivo físico');
     return null;
   }
 
@@ -38,14 +40,14 @@ export async function registerForPushNotificationsAsync() {
   }
 
   if (finalStatus !== 'granted') {
-    console.warn('Permissão de notificação negada pelo usuário');
+    logger.warn('Permissão de notificação negada pelo usuário');
     return null;
   }
 
   const projectId = Constants.expoConfig?.extra?.eas?.projectId;
 
   if (!projectId) {
-    console.error('projectId do EAS não encontrado — rode "eas init" no projeto');
+    logger.error('projectId do EAS não encontrado — rode "eas init" no projeto');
     return null;
   }
 

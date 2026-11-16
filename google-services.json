@@ -7,12 +7,17 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:900868626974:android:5e49883d6814e3007a6c0f",
+        "mobilesdk_app_id": "1:900868626974:android:6be5d4cba0b3e4a67a6c0f",
         "android_client_info": {
-          "package_name": "com.gabrielzs1.admin"
+          "package_name": "app.glowly.cliente"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "900868626974-5n8v2hb952jij4udgkn6lh3h3reshe5h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAFlLnKEjdx-SArxC-UqG5_YQnnyKD4uP8"
@@ -20,7 +25,70 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "900868626974-5n8v2hb952jij4udgkn6lh3h3reshe5h.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:900868626974:android:a992c3eeca902f2f7a6c0f",
+        "android_client_info": {
+          "package_name": "app.glowly.negocios"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "900868626974-5n8v2hb952jij4udgkn6lh3h3reshe5h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAFlLnKEjdx-SArxC-UqG5_YQnnyKD4uP8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "900868626974-5n8v2hb952jij4udgkn6lh3h3reshe5h.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:900868626974:android:5e49883d6814e3007a6c0f",
+        "android_client_info": {
+          "package_name": "com.gabrielzs1.admin"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "900868626974-5n8v2hb952jij4udgkn6lh3h3reshe5h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAFlLnKEjdx-SArxC-UqG5_YQnnyKD4uP8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "900868626974-5n8v2hb952jij4udgkn6lh3h3reshe5h.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     },
@@ -31,7 +99,12 @@
           "package_name": "com.gabrielzs1.client"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "900868626974-5n8v2hb952jij4udgkn6lh3h3reshe5h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAFlLnKEjdx-SArxC-UqG5_YQnnyKD4uP8"
@@ -39,7 +112,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "900868626974-5n8v2hb952jij4udgkn6lh3h3reshe5h.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
